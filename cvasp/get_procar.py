@@ -39,14 +39,14 @@ def get_procar(PROCAR_files,ISPIN):
                     tmp=f.readline()
                     for iion in range(N_ions):
                         tmp=f.readline()
-                        PRO_[ispin,ikpt,iband,iion]=re.split(r'[ \n]+',tmp)[-2]
+                        PRO_[ispin,ikpt,iband,iion]=tmp.split()[-1]
                     tmp=f.readline()
                     if LORBIT==12:
                         tmp=f.readline()
-                        while not "charge" in tmp:
+                        while not tmp.split()==[]:
                             tmp=f.readline()
                         #tmp=f.readline()
-                    tmp=f.readline()
+                    #tmp=f.readline()
                 tmp=f.readline()
             f.readline()
         f.close()
