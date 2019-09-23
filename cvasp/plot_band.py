@@ -29,14 +29,14 @@ class plot_band:
                 if K_files==[]:
                     K_files=[path+"/KPOINTS"]
                 K_files.sort()
-                print("reading ",K_files)
+                #print("reading ",K_files)
                 kpath,kpt_label,KPOINTS=make_k_path(K_files,rep)  
         else:
             K_files=glob(path+'/KPOINTS_*')
             if K_files==[]:
                 K_files=[path+"/KPOINTS"]
             K_files.sort()
-            print("reading ",K_files)
+            #print("reading ",K_files)
             kpath,kpt_label,KPOINTS=make_k_path(K_files,rep)   
         if save:
             np.save(path+'/kpath.npy',kpath)
@@ -100,6 +100,7 @@ class plot_band:
                     plot_type=1
                     ):
         ####
+        print(kpath.shape)
         if kpath.shape[0]==1: # Gamma only
             PRO=np.concatenate((PRO,PRO),axis=1)
             EIG=np.concatenate((EIG,EIG),axis=1)
@@ -116,6 +117,7 @@ class plot_band:
             RH=EIG.shape[2]
         PRO=PRO[:,:,RL:RH]
         EIG=EIG[:,:,RL:RH]
+        print(RH,RL)
         ##
         #
         ISPIN=EIG.shape[0]
@@ -124,9 +126,9 @@ class plot_band:
             if kpath.shape[0]>2:
                 width=6
             else:
-                width=1.5
+                width=2
             hight=8
-            figsize=(((ISPIN)*width+1,hight))
+            figsize=(((ISPIN)*width+0.5*np.max((len(type2_Ele_A),len(type2_Ele_B))),hight))
         else:
             width=(int(figsize[0]-0.5*np.max((len(type2_Ele_A),len(type2_Ele_B))))/2/ISPIN)
         fig=plt.figure(figsize=figsize)
@@ -139,12 +141,17 @@ class plot_band:
             rep    = atoms.get_reciprocal_cell() 
         if not intd:
             intd=np.max(kpath)/0.01
-        gs=GridSpec(1,int(2*(ISPIN*width+0.5*np.max((len(type2_Ele_A),len(type2_Ele_B))))))
         x=np.linspace(0,np.max(kpath),intd*10)
+        if ISPIN==2:
+            gs=GridSpec(1, 3, width_ratios=[3, 3,1])
+        else:
+            gs = GridSpec(1, 2, width_ratios=[3, 1])
         for ispin in range(ISPIN):
+            print(EIG[ispin].shape)
             y=griddata(kpath,EIG[ispin,:],x) 
             print(int(ispin*width*2),int(2*width*(ispin+1)))
-            ax=plt.subplot(gs[0,int(ispin*width*2):int((ispin+1)*width*2)])
+            ax=plt.subplot(gs[0,ispin])
+            #ax=plt.subplot(gs[0,int(ispin*width*2):int((ispin+1)*width*2)])
             ####   plot regular band image
             #
             for i_y in y.T:
@@ -183,12 +190,21 @@ class plot_band:
                         L_B=np.sum(PRO[ispin,:,:,L_INX_B],axis=0)/np.sum(PRO[ispin],axis=2)
                         L=L_A/(L_A+L_B)
                     c=griddata(kpath,np.array(L),x)
-                    ax_cbar = plt.subplot(gs[0,-2:])
                     sc=ax.scatter(np.array([x.T]*(EIG.shape[2])).T,y,vmin=0, vmax=1,c=c,s=2,linewidths=None,marker='o',cmap='jet')
-                    cb=plt.colorbar(sc,cax=ax_cbar,orientation='vertical')
-                    cb.set_ticks([0,1])
-                    cb.ax.tick_params(labelsize=20)
-                    cb.set_ticklabels(['',",".join(type2_Ele_A)])
+                    if ispin==ISPIN-1:
+                        from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+                        cbar_ax = inset_axes(ax,
+                                   width=0.2, # width = 10% of parent_bbox width
+                                   height="100%", # height : 50%
+                                   loc=6,
+                                   bbox_to_anchor=(1.05, 0., 1, 1),
+                                   bbox_transform=ax.transAxes,
+                                   borderpad=0,
+                               )
+                        cb=plt.colorbar(sc,cax=cbar_ax,orientation='vertical')
+                        cb.set_ticks([0,1])
+                        cb.ax.tick_params(labelsize=20)
+                        cb.set_ticklabels(['',",".join(type2_Ele_A)])
                 #plot use symbols
                 if plot_type==1:
                     for ele in type1_Ele:
@@ -198,11 +214,13 @@ class plot_band:
                         c=griddata(kpath,np.array(L),intx2)
                         E=griddata(kpath,EIG[ispin,:],intx2)
                         print(ele[0])
-                        ax.scatter(np.array([intx2.T]*(EIG.shape[2])).T,E,color='',edgecolor=ele[1],s=c*50,marker=ele[2],label=ele[0])
+                        ax.scatter(np.array([intx2.T]*(EIG.shape[2])).T,E,color='',edgecolor=ele[1],s=c*100,marker=ele[2],label=ele[0])
                     if ispin==ISPIN-1:
                         ax.legend(loc='upper right')
 
-        plt.tight_layout()
+#        plt.tight_layout()
+        plt.subplots_adjust(left=0.3, right=0.7, top=0.9, bottom=0.1)
+#        plt.tight_layout()
         plt.savefig('band.png',dpi=360)
         plt.show()        
         

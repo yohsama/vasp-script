@@ -4,6 +4,7 @@ import struct
 import scipy
 import scipy.integrate
 import time
+import sys
 import ase.io
 import matplotlib.pyplot as plt
 from multiprocessing import Pool
@@ -112,24 +113,19 @@ def get_wave(path,selectband):
             wavefile.seek(8*(Recl-4-3*N_Band),1)
             t1=time.time()
             ib0=1
-            for ib in range(len(selectband)):
-                print('read '+str(selectband[ib]))
-                wavefile.seek(8*Recl*(selectband[ib][0]-ib0),1)
-                nb=(selectband[ib][1]-selectband[ib][0]+1)
-                coeff_tmp=struct.unpack('f'*2*nb*Recl,wavefile.read(8*nb*Recl))
-                coeff_tmp=np.array(coeff_tmp).reshape((nb,Recl,2))
-                coeff[ispin,ikpt,selectband[ib][0]-1:selectband[ib][1]]=coeff_tmp[:,:,0]+coeff_tmp[:,:,1]*1j
-                norm_coeff=np.linalg.norm(coeff[ispin,ikpt,selectband[ib][0]-1:selectband[ib][1]],axis=1)
-                coeff[ispin,ikpt,selectband[ib][0]-1:selectband[ib][1]]=(coeff[ispin,ikpt,selectband[ib][0]-1:selectband[ib][1]].T/norm_coeff).T
-                ib0=selectband[ib][1]+1
-            wavefile.seek(8*Recl*(N_Band-selectband[-1][1]),1)
+            wavefile.seek(8*Recl*(selectband[0]-ib0),1)
+            nb=(selectband[1]-selectband[0]+1)
+            coeff_tmp=struct.unpack('f'*2*nb*Recl,wavefile.read(8*nb*Recl))
+            coeff_tmp=np.array(coeff_tmp).reshape((nb,Recl,2))
+            coeff[ispin,ikpt,selectband[0]-1:selectband[1]]=coeff_tmp[:,:,0]+coeff_tmp[:,:,1]*1j
+            norm_coeff=np.linalg.norm(coeff[ispin,ikpt,selectband[0]-1:selectband[1]],axis=1)
+            coeff[ispin,ikpt,selectband[0]-1:selectband[1]]=(coeff[ispin,ikpt,selectband[0]-1:selectband[1]].T/norm_coeff).T
+            wavefile.seek(8*Recl*(N_Band-selectband[1]),1)
             print(time.time()-t1,"coeff done")
     wavefile.close()
     return coeff,igall,eig,occ
 
 
-selectband=[[1400,1600]]
-coeff,igall,eig,occ=get_wave(path,selectband)
 
 def calc_tdm(coeff_,eig_,igall_):
     print('start')
@@ -148,24 +144,56 @@ def calc_tdm(coeff_,eig_,igall_):
     print(time.time()-t1)
     return tdm
 
+def plot_tdm(tdm,index,vb,selectband):
+    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+    ax=plt.subplot(111)
+    intx=int((selectband[1]-selectband[0])/5)
+    if intx <1:
+        intx=1
+    x=np.arange(selectband[0],selectband[1]+1,intx)
+    y=np.arange(selectband[0],selectband[1]+1,intx)
+    sc=ax.imshow(tdm[index],origin='lower')
+    plt.xticks(list(x-selectband[0]),list(x) ,fontsize=20)#-selectaaband[0])
+    plt.yticks(list(y-selectband[0]),list(y),fontsize=20)#-selectband[0])
 
-kpt=[0]
-spin=[0,1]
-for ispin in spin:
-    for ikpt in kpt:
-        for iband in selectband:
-            vb=int(np.sum(occ[ispin,ikpt]>0.001)-iband[0])
-            coeff_=coeff[ispin,ikpt]
-            eig_=eig[ispin,ikpt]
-            igall_=igall[ispin,ikpt]
-            tdm=calc_tdm(coeff_[iband[0]-1:iband[1]],eig_[iband[0]-1:iband[1]],igall_)
-            #np.savetxt('tdmpy.dat',tdm)
-            np.savetxt("tdm_"+str(ispin)+'_'+str(iband[0])+'_'+str(iband[1]),tdm[-1])
-            tdm[:,:vb+1,:vb+1]=0
-            tdm[:,vb+1:,vb+1:]=0
-            #for id in range(4):
-            plt.imshow(tdm[-1])
-            #    plt.yticks(np.arange(0,iband[1]-iband[0]),np.arange(iband[0],iband[1]))
-            #    plt.xticks(np.arange(0,iband[1]-iband[0]),np.arange(iband[0],iband[1]))
-            plt.colorbar()
-            plt.savefig("spin_%d.jpg" % ispin,dpi=300)
+    ax.plot([vb+0.5,vb+0.5],[vb-0.5,tdm.shape[1]-0.5],color='b')
+    ax.plot([0-0.5,vb+0.5],[vb+0.5,vb+0.5],color='red')
+    ax.plot([vb+0.5,tdm.shape[1]-0.5],[vb+0.5,vb+0.5],color='b')
+    ax.plot([vb+0.5,vb+0.5],[0-0.5,vb+0.5],color='red')
+    cbar_ax = inset_axes(ax,
+                width=0.4, # width = 10% of parent_bbox width
+                height="100%", # height : 50%
+                loc=6,
+                bbox_to_anchor=(1.05, 0., 1, 1),
+                bbox_transform=ax.transAxes,
+                borderpad=0,
+            )
+    cb=plt.colorbar(sc,cax=cbar_ax,orientation='vertical')
+    cb.ax.tick_params(labelsize=20)
+    print(x,selectband[0])
+
+read=input("read from old data\n")
+fig=plt.figure(figsize=(10,8))
+if "T" in read:
+    tdm,iband,ikpt,ispin,vb=np.load(input("data name:\n"),allow_pickle=True)
+    tdm[:,:vb+1,:vb+1]=0
+    tdm[:,vb+1:,vb+1:]=0
+else:
+    iband=[int(input("Start band\n")),int(input("End band\n"))]
+    ikpt=int(input("Kpoints\n"))
+    ispin=int(input("Ispin\n"))
+    coeff,igall,eig,occ=get_wave(path,iband)
+    vb=int(np.sum(occ[ispin,ikpt]>0.001)-iband[0])
+    np.save("occ.npy",occ)
+    coeff_=coeff[ispin,ikpt]
+    eig_=eig[ispin,ikpt]
+    igall_=igall[ispin,ikpt]
+    tdm=calc_tdm(coeff_[iband[0]-1:iband[1]],eig_[iband[0]-1:iband[1]],igall_)
+    np.save("tdm_%d_%d_%d_%d.npy"%(ispin,ikpt,iband[0],iband[1]),(tdm,iband,ikpt,ispin,vb))
+    np.savetxt("tdm_"+str(ispin)+'_'+str(iband[0])+'_'+str(iband[1]),tdm[-1])
+    tdm[:,:vb+1,:vb+1]=0
+    tdm[:,vb+1:,vb+1:]=0
+plot_tdm(tdm,-1,vb,iband)
+plt.savefig("tdm_%d_%d_%d_%d.jpg"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
+plt.tight_layout()
+plt.show()
