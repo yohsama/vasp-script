@@ -15,7 +15,7 @@ coeff,igall,eig,occ=get_wavecar('./WAVECAR','./CONTCAR',selectband)
 def calc_tdm(coeff_,eig_,igall_):
     print('start')
     t1=time.time()
-    print(eig_)
+    #print(eig_)
     dE=np.array(np.matrix(eig_)-np.matrix(eig_).T)/(2*13.605826)
     dE[dE==0]=np.inf 
     tdm=np.zeros((4,dE.shape[0],dE.shape[1]),dtype='complex')
@@ -26,8 +26,8 @@ def calc_tdm(coeff_,eig_,igall_):
         tdm[i]=tdm_
     tdm[-1]=np.sum(np.array(tdm),axis=0)
     tdm=np.abs(tdm)
-    print('done')
-    print(time.time()-t1)
+    #print('done')
+    #print(time.time()-t1)
     return tdm
 
 spin=[0]
@@ -41,9 +41,9 @@ for ispin in spin:
             eig_=eig[ispin,ikpt]
             igall_=igall[ispin,ikpt]
             tdm=calc_tdm(coeff_[iband[0]-1:iband[1]],eig_[iband[0]-1:iband[1]],igall_)
-            print(coeff_[iband[0]-1:iband[1]],eig_[iband[0]-1:iband[1]])
+      #      print(coeff_[iband[0]-1:iband[1]],eig_[iband[0]-1:iband[1]])
             np.save("tdm_"+str(ispin)+'_'+str(iband[0])+'_'+str(iband[1]),tdm)
-            print(tdm)
+       #     print(tdm)
             for id in range(4):
                 plt.imshow(tdm[id])
                 plt.yticks(np.arange(0,iband[1]-iband[0]),np.arange(iband[0],iband[1]))

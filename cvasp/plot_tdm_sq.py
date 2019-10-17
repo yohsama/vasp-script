@@ -7,6 +7,8 @@ import time
 import sys
 import ase.io
 import matplotlib.pyplot as plt
+import matplotlib
+import seaborn as sns
 from multiprocessing import Pool
 path='./'
 def get_wave(path,selectband):
@@ -28,7 +30,7 @@ def get_wave(path,selectband):
     b=np.zeros((3,3))
     Vcell=np.dot(np.cross(cell[0,:],cell[1,:]),cell[2,:])
     b[0,:]=2*np.pi*np.cross(cell[1,:],cell[2,:])/Vcell
-    b[1,:]=2*np.pi*np.cross(cell[0,:],cell[2,:])/Vcell
+    b[1,:]=2*np.pi*np.cross(cell[2,:],cell[0,:])/Vcell
     b[2,:]=2*np.pi*np.cross(cell[0,:],cell[1,:])/Vcell
     bmag=np.sqrt(np.sum(b**2,1))
     phi12=np.arccos(np.dot(b[0,:],b[1,:])/bmag[0]*bmag[1])
@@ -91,13 +93,15 @@ def get_wave(path,selectband):
             nb3=list(range(0,nb3max))+list(range(-nb3max-1,0))
             igtmp=np.array(np.meshgrid(nb2,nb3,nb1)).reshape(3,(2*nb3max+1)*(2*nb2max+1)*(2*nb1max+1)).T
             igtmp=igtmp[:,np.array([2,0,1])]
-            np.savetxt('igtmp',igtmp)
             sumkg=np.matrix(igtmp+wave_k_vector[ispin,ikpt])*np.matrix(b)
             gtot=np.linalg.norm(sumkg,axis=1)
             etot=(gtot**2)/c
             igtmp=igtmp[etot<=Encut]
             igtmp=igtmp.dot(b)
+            np.savetxt('igtmp',igtmp)
+            print(b)
             igall[ispin,ikpt,0:igtmp.shape[0],:]=igtmp
+            print(igtmp.shape[0],N_plane)
            # for ig3p in list(range(0,nb3max))+list(range(-nb3max-1,0)):
            #     for ig2p in list(range(0,nb2max))+list(range(-nb2max-1,0)):
            #         for ig1p in list(range(0,nb1max))+list(range(-nb1max-1,0)):
@@ -144,22 +148,66 @@ def calc_tdm(coeff_,eig_,igall_):
     print(time.time()-t1)
     return tdm
 
+def plot_lamda(lamda,tdm,index,vb,selectband):
+    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+    ax=plt.subplot(111)
+    intx=int((selectband[1]-selectband[0])/10)
+    if intx <1:
+        intx=1
+    x=np.arange(selectband[0],selectband[0]+vb+1,intx)
+    y=np.arange(selectband[0]+vb+1,selectband[1]+1,intx)
+    #x=np.arange(selectband[0],selectband[1]+1,intx)
+    #y=np.arange(selectband[0],selectband[1]+1,intx)
+    #sc=ax.imshow(tdm[index],origin='lower',cmap="hot_r")
+    sns.set_style("dark")
+    sns.heatmap(np.abs(lamda[vb+1:,:vb+1]),ax=ax,square=True,cmap='Spectral_r',mask=((np.abs(lamda[vb+1:,:vb+1])>820)|(np.abs(lamda[vb+1:,:vb+1])<350)),vmin=350,vmax=820)
+    plt.xticks(list(x-selectband[0]),list(x) ,fontsize=24,rotation='-90')
+    plt.yticks(list(y-1-selectband[0]-vb),list(y),fontsize=24,rotation='0')
+    #plt.xticks(list(x-selectband[0]),["VB-%d" % i for i in x[-1]-x[0:-1]]+["VB"] ,fontsize=24,rotation='-90')#-selectaaband[0])
+    #plt.yticks(list(y-1-vb-selectband[0]),["CB"]+["CB+%d" % i for i in y[1:]-selectband[0]],fontsize=24,rotation='0')#-selectband[0]) 
+    ax.invert_yaxis()
+    ax.invert_xaxis()
+    #dv=1
+    #ax.plot([vb+dv,vb+dv],[vb-dv,tdm.shape[1]-dv],color='b')
+    #ax.plot([0-dv,vb+dv],[vb+dv,vb+dv],color='g')
+    #ax.plot([vb+dv,tdm.shape[1]-dv],[vb+dv,vb+dv],color='b')
+    #ax.plot([vb+dv,vb+dv],[0-dv,vb+dv],color='g')
+    #cbar_ax = inset_axes(ax,
+    #            width=0.4, # width = 10% of parent_bbox width
+    #            height="100%", # height : 50%
+    #            loc=6,
+    #            bbox_to_anchor=(1.05, 0., 1, 1),
+    #            bbox_transform=ax.transAxes,
+    #            borderpad=0,
+    #        )
+    #cb=plt.colorbar(sc,cax=cbar_ax,orientation='vertical')
+    #cb.ax.tick_params(labelsize=24)
+    print(x,selectband[0])
+
+
 def plot_tdm(tdm,index,vb,selectband):
     from mpl_toolkits.axes_grid1.inset_locator import inset_axes
     ax=plt.subplot(111)
-    intx=int((selectband[1]-selectband[0])/5)
+    intx=int((selectband[1]-selectband[0])/20)
     if intx <1:
         intx=1
-    x=np.arange(selectband[0],selectband[1]+1,intx)
-    y=np.arange(selectband[0],selectband[1]+1,intx)
-    sc=ax.imshow(tdm[index],origin='lower')
-    plt.xticks(list(x-selectband[0]),list(x) ,fontsize=20)#-selectaaband[0])
-    plt.yticks(list(y-selectband[0]),list(y),fontsize=20)#-selectband[0])
-
-    ax.plot([vb+0.5,vb+0.5],[vb-0.5,tdm.shape[1]-0.5],color='b')
-    ax.plot([0-0.5,vb+0.5],[vb+0.5,vb+0.5],color='red')
-    ax.plot([vb+0.5,tdm.shape[1]-0.5],[vb+0.5,vb+0.5],color='b')
-    ax.plot([vb+0.5,vb+0.5],[0-0.5,vb+0.5],color='red')
+    x=np.arange(selectband[0],selectband[0]+vb+1,intx)
+    y=np.arange(selectband[0]+vb+1,selectband[1]+1,intx)
+    #x=np.arange(selectband[0],selectband[1]+1,intx)
+    #y=np.arange(selectband[0],selectband[1]+1,intx)
+    sc=ax.imshow(tdm[index,vb+1:,:vb+1],origin='lower',cmap="hot_r")
+    #sns.set_style("white")
+    #ax=sns.heatmap(tdm[index],ax=ax,square=True,cmap="hot_r")
+    plt.xticks(list(x-selectband[0]),list(x) ,fontsize=24,rotation='-90')
+    plt.yticks(list(y-1-selectband[0]-vb),list(y),fontsize=24,rotation='0')
+    #plt.xticks(list(x-selectband[0]),["VB-%d" % i for i in x[-1]-x[0:-1]]+["VB"] ,fontsize=24,rotation='-90')#-selectaaband[0])
+    #plt.yticks(list(y-1-vb-selectband[0]),["CB"]+["CB+%d" % i for i in y[1:]-selectband[0]],fontsize=24,rotation='0')#-selectband[0]) 
+    ax.invert_xaxis()
+    #dv=0.5
+    #ax.plot([vb+dv,vb+dv],[vb-dv,tdm.shape[1]-dv],color='b')
+    #ax.plot([0-dv,vb+dv],[vb+dv,vb+dv],color='g')
+    #ax.plot([vb+dv,tdm.shape[1]-dv],[vb+dv,vb+dv],color='b')
+    #ax.plot([vb+dv,vb+dv],[0-dv,vb+dv],color='g')
     cbar_ax = inset_axes(ax,
                 width=0.4, # width = 10% of parent_bbox width
                 height="100%", # height : 50%
@@ -169,13 +217,55 @@ def plot_tdm(tdm,index,vb,selectband):
                 borderpad=0,
             )
     cb=plt.colorbar(sc,cax=cbar_ax,orientation='vertical')
-    cb.ax.tick_params(labelsize=20)
+    cbar_ax.xaxis.set_label_position('top')
+    cbar_ax.set_xlabel(r'$\mathrm{Debye^2}$',fontsize=24)
+    cb.ax.tick_params(labelsize=24)
     print(x,selectband[0])
+
+def plot_tdm_byEnergy(Eig,ispin,ikpt,tdm,index,vb,selectband):
+    from mpl_toolkits.mplot3d import Axes3D
+    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+    ax=plt.subplot(111)
+    Eig=Eig[ispin,ikpt,selectband[0]-1:selectband[1]]
+    Eintx=(np.max(Eig)-np.min(Eig))/1000
+    Emin=np.min(Eig)
+    Emax=np.max(Eig)
+    EE=np.zeros((1000,1000))
+    for i in range(1000):
+        for j in range(1000):
+            EE[i,j]=tdm[-1,np.sum(Eig<(Emin+i*Eintx))-1,np.sum(Eig<(Emin+j*Eintx))-1]
+    x=np.arange(-0.5,999.5,50)*Eintx+Emin
+    y=np.arange(-0.5,999.5,50)*Eintx+Emin
+#    plt.imshow(EE)
+    sns.set_style("whitegrid")
+    ax=sns.heatmap(EE,ax=ax,square=True)
+    sns.boxplot()
+    ax.invert_yaxis()
+    plt.xticks(range(0,1000,50),["%2.2f" % i for i in x],fontsize=24,rotation='90')#-selectaaband[0])
+    plt.yticks(range(0,1000,50),["%2.2f" % i for i in y],fontsize=24,rotation='0')#-selectband[0])
+    #ax.plot(,[vb-dv,tdm.shape[1]-dv],color='b')
+    #ax.plot([0-dv,vb+dv],[vb+dv,vb+dv],color='g')
+    #ax.plot([vb+dv,tdm.shape[1]-dv],[vb+dv,vb+dv],color='b')
+    #ax.plot([vb+dv,vb+dv],[0-dv,vb+dv],color='g')
+    #cbar_ax = inset_axes(ax,
+    #            width=0.4, # width = 10% of parent_bbox width
+    #            height="100%", # height : 50%
+    #            loc=6,
+    #            bbox_to_anchor=(1.05, 0., 1, 1),
+    #            bbox_transform=ax.transAxes,
+    #            borderpad=0,
+    #        )
+    #cb=plt.colorbar(sc,cax=cbar_ax,orientation='vertical')
+    #cb.ax.tick_params(labelsize=24)
+    print(x,selectband[0])
+
 
 read=input("read from old data\n")
 fig=plt.figure(figsize=(10,8))
-if "T" in read:
-    tdm,iband,ikpt,ispin,vb=np.load(input("data name:\n"),allow_pickle=True)
+#read="T"
+if not read is "":
+    tdm,iband,ikpt,ispin,vb,eig=np.load(read,allow_pickle=True)
+    #tdm,iband,ikpt,ispin,vb,eig=np.load("tdm_0_0_1450_1550.npy",allow_pickle=True)
     tdm[:,:vb+1,:vb+1]=0
     tdm[:,vb+1:,vb+1:]=0
 else:
@@ -189,11 +279,25 @@ else:
     eig_=eig[ispin,ikpt]
     igall_=igall[ispin,ikpt]
     tdm=calc_tdm(coeff_[iband[0]-1:iband[1]],eig_[iband[0]-1:iband[1]],igall_)
-    np.save("tdm_%d_%d_%d_%d.npy"%(ispin,ikpt,iband[0],iband[1]),(tdm,iband,ikpt,ispin,vb))
+    np.save("tdm_%d_%d_%d_%d.npy"%(ispin,ikpt,iband[0],iband[1]),(tdm,iband,ikpt,ispin,vb,eig))
     np.savetxt("tdm_"+str(ispin)+'_'+str(iband[0])+'_'+str(iband[1]),tdm[-1])
     tdm[:,:vb+1,:vb+1]=0
     tdm[:,vb+1:,vb+1:]=0
+eig_=np.array(eig[ispin,ikpt,iband[0]-1:iband[1]]).reshape(iband[1]-iband[0]+1,1)
+lamda=1240/(eig_.T-eig_)
+#lamda[tdm[-1]<1]=np.inf
+print(eig_.shape,lamda.shape,(eig_.T-eig_).shape)
+print(iband)
+#plot_tdm_byEnergy(eig,ispin,ikpt,tdm,-1,vb,iband)
+#plt.rc('font',family='Times New Roman')
+#matplotlib.rcParams['mathtext.fontset'] = 'stix'
 plot_tdm(tdm,-1,vb,iband)
-plt.savefig("tdm_%d_%d_%d_%d.jpg"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
 plt.tight_layout()
+plt.subplots_adjust(top=0.85)
+plt.savefig("tdm_%d_%d_%d_%d.jpg"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
+plt.show()
+fig=plt.figure(figsize=(10,8))
+plot_lamda(lamda,tdm,-1,vb,iband)
+plt.tight_layout()
+plt.savefig("lamda_%d_%d_%d_%d.jpg"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
 plt.show()
