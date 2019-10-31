@@ -260,6 +260,54 @@ class plot_band:
             ax.legend(loc='upper right',fontsize=24)
             ax_cbar=None
             divider=None
+
+        if plot_type==1:
+            #EIG1=EIG[ispin]-1/10
+            LS=0
+            Tex=[]
+            T=[]
+            kp['T11']=kp['eig']
+            kp['T21']=kp['eig']
+            for ele in type1_Ele:
+                TexA=[]
+                A=[]
+                for iA in ele[0]:
+                    iAs=iA.split()[0].split(r'_')
+                    Ele_A=iAs[0]
+                    if len(iAs)>1:
+                        orbit=promap[iAs[1]]
+                        TexA.append(r'$\mathrm{'+Ele_A+'_{'+protex[iAs[1]]+'}}$')
+                    else:
+                        TexA.append(r'$\mathrm{'+Ele_A+'}$')
+                        orbit=['tot']
+                    mE=iE[(iE['ion']==Ele_A)][orbit+['band','kpt']].groupby(['kpt','band']).sum().reset_index()
+                    mE[iA]=mE[orbit].apply(lambda x: x.sum(), axis=1)
+                    kp=kp.merge(mE[['band','kpt',iA]],how='outer')
+                    A.append(iA)
+                Tex.append(",".join(TexA))
+                label=",".join(ele[0])
+                kp[label]=kp[A].apply(lambda x: x.sum(), axis=1)
+                width=100/(Elim[1]-Elim[0])
+                kp['T12']=kp['T11']+kp[label]/width
+                kp['T22']=kp['T21']-kp[label]/width
+                if kp['kpath'].max()==kp['kpath'].min():
+                    for i in range(kp['band'].min(),kp['band'].max()+1):
+                        kkp=kp[kp['band']==i]
+                        axfill=plt.fill_between([-0.5,0.5],kkp['T11'].values.repeat(2),kkp['T12'].values.repeat(2),color=ele[1],alpha=0.75,label=label)
+                        axfill=plt.fill_between([-0.5,0.5],kkp['T21'].values.repeat(2),kkp['T22'].values.repeat(2),color=ele[1],alpha=0.75)
+                        label=None
+                else:
+                    for i in range(kp['band'].min(),kp['band'].max()+1):
+                        kkp=kp[kp['band']==i]
+                        axfill=plt.fill_between(kkp['kpath'],kkp['T11'],kkp['T12'],color=ele[1],alpha=0.75,label=label)
+                        axfill=plt.fill_between(kkp['kpath'],kkp['T21'],kkp['T22'],color=ele[1],alpha=0.75)
+                        label=None
+                kp['T11']=kp['T12']
+                kp['T21']=kp['T22']
+            ax.legend(loc='upper right',fontsize=24)
+            ax_cbar=None
+            divider=None
+
         return ax,ax_cbar,divider
 
 
