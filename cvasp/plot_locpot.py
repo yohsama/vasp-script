@@ -47,21 +47,28 @@ if LOC_DAT.shape[0]>1:
     LOC_DAT_B=(LOC_DAT[0]-LOC_DAT[1])/2
 else:
     LOC_DAT_A=(LOC_DAT[0])
+<<<<<<< HEAD
 
 plt.rc('font',family='Times New Roman')
 
 plt.figure(figsize=(5,4))
 plt.plot(range(NG[_axe])/NG[_axe]*np.linalg.norm(cell[(2,1,0)[_axe],:]),np.average(LOC_DAT_A,axis=axe),color='black')
+=======
+plt.plot(range(NG[_axe])/NG[_axe]*np.linalg.norm(cell[(2,1,0)[_axe],:]),np.average(LOC_DAT_A,axis=axe))
+>>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
 #try:
 #    plt.plot(range(NG[_axe])/NG[_axe]*np.linalg.norm(cell[(2,1,0)[_axe],:]),np.average(LOC_DAT_B,axis=axe))
 #except:
 #    pass
 
+<<<<<<< HEAD
 plt.xlim([np.min(range(NG[_axe])/NG[_axe]*np.linalg.norm(cell[(2,1,0)[_axe],:])),np.max(range(NG[_axe])/NG[_axe]*np.linalg.norm(cell[(2,1,0)[_axe],:]))])
 plt.xticks(fontsize=30,rotation='0')
 plt.yticks(fontsize=30,rotation='0')
 plt.tight_layout()
 print(np.min(np.average(LOC_DAT_A,axis=axe))-np.max(np.average(LOC_DAT_A,axis=axe)))
+=======
+>>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
 plt.savefig("LOC_%s.jpg" % sys.argv[1])
 plt.show()
 

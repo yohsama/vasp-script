@@ -93,7 +93,11 @@ class plot_band:
         if len(sE) > 0:
             ax.plot([sE['kpath']]*2,np.array([-1000,1000]),color='black')
             ax.set_xticks(sE['kpath'])
+<<<<<<< HEAD
             ax.set_xticklabels(sE['kpt_label'],fontsize=24)
+=======
+            ax.set_xticklabels(sE['kpt_label'],fontsize=20)
+>>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
         if sE['kpath'].min()==kpoints['kpath'].max():
             ax.set_xlim([-0.5,0.5])
             ax.set_xticklabels([])
@@ -139,7 +143,11 @@ class plot_band:
             ax.set_xticklabels([])
         else:
             ax.set_xlim([kpoints['kpath'].min(),kpoints['kpath'].max()])
+<<<<<<< HEAD
         ax.set_yticklabels(ax.get_yticks(),fontsize=24)
+=======
+        ax.set_yticklabels(ax.get_yticks(),fontsize=20)
+>>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
         ## plot PBAND  ##
         ##
         #
@@ -211,7 +219,11 @@ class plot_band:
             sc=ax.scatter(x=x,y=y,c=c,vmin=0,vmax=1,s=2,linewidths=None,marker='o',cmap='jet')
             cb=plt.colorbar(sc,cax=ax_cbar,orientation='vertical')
             cb.set_ticks([0,1])
+<<<<<<< HEAD
             cb.ax.tick_params(labelsize=24)
+=======
+            cb.ax.tick_params(labelsize=20)
+>>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
             cb.set_ticklabels(['',",".join(TexA)])
      #   plot use symbols
         if plot_type==1:
@@ -257,7 +269,11 @@ class plot_band:
                         label=None
                 kp['T11']=kp['T12']
                 kp['T21']=kp['T22']
+<<<<<<< HEAD
             ax.legend(loc='upper right',fontsize=24)
+=======
+            ax.legend(loc='upper right',fontsize=18)
+>>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
             ax_cbar=None
             divider=None
         return ax,ax_cbar,divider

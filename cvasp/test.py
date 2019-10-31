@@ -52,8 +52,13 @@ if not tmp =="":
 else:
     figsize=(6,8)
 
+<<<<<<< HEAD
 plt.rc('font',family='Times New Roman')
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
+=======
+#plt.rc('font',family='Times New Roman')
+#matplotlib.rcParams['mathtext.fontset'] = 'stix'
+>>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
 
 #if True:
 try :
@@ -114,13 +119,22 @@ for ispin in range(ISPIN):
             igall,b=get_wavecar.get_igall(WAVECARs,CONTCAR)
             iband=np.arange(iselectband[0],iselectband[1]+1)
             coeff=get_wavecar.get_coeff(WAVECARs,iband)
+<<<<<<< HEAD
             tdm_k,tdm=cal_tdm_byband(ispin,iselectband,coeff,igall,eig,occ,b)
             np.savetxt('tdm_cx.dat',tdm)
             print(tdm.shape)
             ax_tdm=plot_tdm_band(kpoints,tdm[:,-1],0,label="_".join([str(i) for i in iselectband]),ax_tdm=ax_tdm)
+=======
+            tdm_k=cal_tdm_byband(ispin,iselectband,coeff,igall,eig,occ,b)
+            ax_tdm=plot_tdm_band(kpoints,tdm_k,0,label="_".join([str(i) for i in iselectband]),ax_tdm=ax_tdm)
+>>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
             ymax=np.max((ymax,np.max(tdm_k)))
         ax_tdm.set_ylim((0,ymax))
         plt.legend()
     plt.tight_layout()
+<<<<<<< HEAD
     plt.savefig('band_%d.png' % ispin,dpi=360)
+=======
+    plt.savefig('band_%d.png' % ispin)
+>>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
 plt.show()

@@ -44,11 +44,16 @@ def get_procar(PROCAR_files,ISPIN):
                         tmp=f.readline()
                         PRO_[ispin,ikpt,iband,iion,0:len(tmp.split())-1]=tmp.split()[1:]
                         PRO_[ispin,ikpt,iband,iion,9]=tmp.split()[-1]
+<<<<<<< HEAD
                     if N_ions>1:
                         tmp=f.readline()
                         TTOT_[ispin,ikpt,iband]=tmp.split()[-1]
                     #else:
                      #   TTOT_[ispin,ikpt,iband]=PRO_[ispin,ikpt,iband,iion,0:len(tmp.split())-1]
+=======
+                    tmp=f.readline()
+                    TTOT_[ispin,ikpt,iband]=tmp.split()[-1]
+>>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
                     if LORBIT==12:
                         tmp=f.readline()
                         while not tmp.split()==[]:
