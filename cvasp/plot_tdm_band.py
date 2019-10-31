@@ -28,18 +28,11 @@ def calc_tdm(coeff_1,coeff_2,eig_1,eig_2,igall_,b):
         #eigall_=eigall_.dot(b)
         #tdm_=(np.conj(coeff_1)*np.sum(eigall_,axis=1)).dot(coeff_2.T)
         tdm_=(np.conj(coeff_1)*(igall_[:,i])).dot(coeff_2.T)
-<<<<<<< HEAD
         tdm_=1j/np.array(dE)*np.array(tdm_)*2.541746*0.529177249
 #        tdm__r=np.real(tdm_)
 #        tdm__i=np.imag(tdm_)
         if i==0:
             print("%f\t%f" % (np.real(tdm_),np.imag(tdm_)))
-=======
-
-        tdm_=1j/np.array(dE)*np.array(tdm_)*2.541746*0.529177249
-#        tdm__r=np.real(tdm_)
-#        tdm__i=np.imag(tdm_)
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
         tdm_= np.conj(tdm_)*tdm_
         tdm[:,:,i]=tdm_
 #        tdm_r[:,:,i]=tdm__r
@@ -48,11 +41,7 @@ def calc_tdm(coeff_1,coeff_2,eig_1,eig_2,igall_,b):
     tdm[:,:,-1]=np.sum(np.array(tdm[:,:,0:3]),axis=2)
 #    tdm_r[:,:,-1]=np.sum(np.array(tdm_r[:,:,0:3]),axis=2)
 #    tdm_i[:,:,-1]=np.sum(np.array(tdm_i[:,:,0:3]),axis=2)
-<<<<<<< HEAD
 #    print(tdm_r)
-=======
-    print(tdm_r)
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
 #    print(tdm_i)
     #tdm=np.abs(tdm)
     #print('done')
@@ -65,18 +54,14 @@ def calc_tdm(coeff_1,coeff_2,eig_1,eig_2,igall_,b):
 
 def cal_tdm_byband(ispin,iband,coeff,igall,eig,occ,b):
     tdm_k=np.array([])
-<<<<<<< HEAD
     tdm_k_x=np.array([])
     tdm_k_y=np.array([])
     tdm_k_z=np.array([])
-=======
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
     for ikpt in range(coeff.shape[1]):
         coeff_=coeff[ispin,ikpt]
         eig_=eig[ispin,ikpt]
         igall_=igall[ispin,ikpt]
         tdm=calc_tdm(coeff_[iband[0]-1],coeff_[iband[1]-1],eig_[iband[0]-1],eig_[iband[1]-1],igall_,b)
-<<<<<<< HEAD
         tdm_k=np.append(tdm_k,np.real(tdm[:,:,-1]))
         tdm_k_x=np.append(tdm_k_x,np.real(tdm[:,:,-4]))
         tdm_k_y=np.append(tdm_k_y,np.real(tdm[:,:,-3]))
@@ -85,11 +70,6 @@ def cal_tdm_byband(ispin,iband,coeff,igall,eig,occ,b):
     #print(tdm_k_x)
     tdm=np.array([tdm_k_x,tdm_k_y,tdm_k_z,tdm_k]).reshape((4,coeff.shape[1])).T
     return tdm_k,tdm
-=======
-        tdm_k=np.append(tdm_k,tdm[:,:,-1])
-    np.save('tdm_k.npy',tdm_k)
-    return tdm_k
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
 
 def plot_tdm_band(kpoints,tdm_k,ispin,label=None,ax_tdm=None):
     #print(kpoints)

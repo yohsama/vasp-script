@@ -43,12 +43,8 @@ def plot_dos(ISPIN):
             print(PDOS.shape)
             plt.plot(x,np.array([np.sum(PDOS[select,:,1::2],axis=(0,2)),-np.sum(PDOS[select,:,2::2],axis=(0,2))]).T,label=ele)
         else:
-<<<<<<< HEAD
             print(PDOS.shape)
             plt.plot(x,np.sum(PDOS[select,:,1:],axis=(0,2)).T,label=ele)
-=======
-            plt.plot(x,np.sum(PDOS[select,1],axis=(0,2)).T,label=ele)
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
     
     plt.xticks(fontsize=20)
     plt.xlim((-2,5))

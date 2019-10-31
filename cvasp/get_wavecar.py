@@ -73,13 +73,9 @@ class get_wavecar:
             b[1,:]=2*np.pi*np.cross(cell[2,:],cell[0,:])/Vcell
             b[2,:]=2*np.pi*np.cross(cell[0,:],cell[1,:])/Vcell
             bmag=np.sqrt(np.sum(b**2,1))
-<<<<<<< HEAD
             #phi12=np.arccos(np.dot(b[0,:],b[1,:])/bmag[0]*bmag[1])
             phi12=np.arccos(np.dot(b[0,:],b[1,:])/bmag[0]/bmag[1])
             #print(np.dot(b[0,:],b[1,:]))
-=======
-            phi12=np.arccos(np.dot(b[0,:],b[1,:])/bmag[0]*bmag[1])
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
             vtmp=np.cross(b[0,:],b[1,:])
             vmag=np.linalg.norm(np.cross(b[0,:],b[1,:]))
             sinphi123=np.dot(b[2,:],vtmp)/(vmag*bmag[2])
@@ -87,34 +83,20 @@ class get_wavecar:
             nb2maxA=np.round(np.sqrt(Encut*c)/(bmag[1]*abs(np.sin(phi12))))+1
             nb3maxA=np.round(np.sqrt(Encut*c)/(bmag[2]*abs(sinphi123)))+1
             npmaxA=np.round(4*np.pi*nb1maxA*nb2maxA*nb3maxA/3)
-<<<<<<< HEAD
             #phi13=np.arccos(np.dot(b[0,:],b[2,:])/bmag[0]*bmag[2])
             phi13=np.arccos(np.dot(b[0,:],b[2,:])/bmag[0]/bmag[2])
             vtmp=np.cross(b[0,:],b[2,:])
             vmag=np.linalg.norm(vtmp)
             sinphi123=np.dot(b[1,:],vtmp)/(vmag*bmag[1])
-=======
-            phi13=np.arccos(np.dot(b[0,:],b[2,:])/bmag[0]*bmag[2])
-            vtmp=np.cross(b[0,:],b[2,:])
-            vmag=np.linalg.norm(vtmp)
-            sinphi123=np.dot(b[1,:],vtmp/(vmag*bmag[1]))
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
             nb1maxB=np.round(np.sqrt(Encut*c)/bmag[0]*abs(np.sin(phi13))+1)
             nb2maxB=np.round(np.sqrt(Encut*c)/bmag[1]*abs(sinphi123)+1)
             nb3maxB=np.round(np.sqrt(Encut*c)/bmag[2]*abs(np.sin(phi13))+1)
             npmaxB=np.round(4*np.pi*nb1maxB*nb2maxB*nb3maxB/3)
-<<<<<<< HEAD
             #phi23=np.arccos(np.dot(b[1,:],b[2,:])/bmag[1]*bmag[2])
             phi23=np.arccos(np.dot(b[1,:],b[2,:])/bmag[1]/bmag[2])
             vtmp=np.cross(b[1,:],b[2,:])
             vmag=np.linalg.norm(vtmp)
             sinphi123=np.dot(b[0,:],vtmp)/(vmag*bmag[1])
-=======
-            phi23=np.arccos(np.dot(b[1,:],b[2,:])/bmag[1]*bmag[2])
-            vtmp=np.cross(b[1,:],b[2,:])
-            vmag=np.linalg.norm(vtmp)
-            sinphi123=np.dot(b[0,:],vtmp/(vmag*bmag[1]))
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
             nb1maxC=np.round(np.sqrt(Encut*c)/bmag[0]*abs(sinphi123)+1)
             nb2maxC=np.round(np.sqrt(Encut*c)/bmag[1]*abs(np.sin(phi23))+1)
             nb3maxC=np.round(np.sqrt(Encut*c)/bmag[2]*abs(np.sin(phi23))+1)
@@ -157,11 +139,7 @@ class get_wavecar:
                     tmp2=np.zeros((igall_.shape[0],igall_.shape[1],np.max((igall.shape[2],igall_.shape[2])),igall_.shape[3]))
                     tmp2[:,:,:igall_.shape[2]]=igall_
                     igall=np.concatenate((igall,tmp2),axis=1)
-<<<<<<< HEAD
         #print(igall)
-=======
-        print(igall)
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
         return igall,b
     
     

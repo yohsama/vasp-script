@@ -99,13 +99,7 @@ def get_wave(path,selectband):
             igtmp=igtmp[etot<=Encut]
             igtmp=igtmp.dot(b)
             np.savetxt('igtmp',igtmp)
-<<<<<<< HEAD
             igall[ispin,ikpt,0:igtmp.shape[0],:]=igtmp
-=======
-            print(b)
-            igall[ispin,ikpt,0:igtmp.shape[0],:]=igtmp
-            print(igtmp.shape[0],N_plane)
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
            # for ig3p in list(range(0,nb3max))+list(range(-nb3max-1,0)):
            #     for ig2p in list(range(0,nb2max))+list(range(-nb2max-1,0)):
            #         for ig1p in list(range(0,nb1max))+list(range(-nb1max-1,0)):
@@ -130,13 +124,9 @@ def get_wave(path,selectband):
             coeff[ispin,ikpt,selectband[0]-1:selectband[1]]=(coeff[ispin,ikpt,selectband[0]-1:selectband[1]].T/norm_coeff).T
             wavefile.seek(8*Recl*(N_Band-selectband[1]),1)
             print(time.time()-t1,"coeff done")
-<<<<<<< HEAD
             print("coeff",coeff[0,0,selectband[0]-1])
     wavefile.close()
     print("coeff",coeff[0,0,selectband[0]-1])
-=======
-    wavefile.close()
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
     return coeff,igall,eig,occ
 
 
@@ -161,31 +151,19 @@ def calc_tdm(coeff_,eig_,igall_):
 def plot_lamda(lamda,tdm,index,vb,selectband):
     from mpl_toolkits.axes_grid1.inset_locator import inset_axes
     ax=plt.subplot(111)
-<<<<<<< HEAD
     intx=int((selectband[1]-selectband[0])/5)
     if intx <1:
         intx=1
     intx=5
     x=np.arange(selectband[0],selectband[0]+vb+1,intx)
     y=np.arange(selectband[1]+1,selectband[0]+vb+1,intx)
-=======
-    intx=int((selectband[1]-selectband[0])/10)
-    if intx <1:
-        intx=1
-    x=np.arange(selectband[0],selectband[0]+vb+1,intx)
-    y=np.arange(selectband[0]+vb+1,selectband[1]+1,intx)
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
     #x=np.arange(selectband[0],selectband[1]+1,intx)
     #y=np.arange(selectband[0],selectband[1]+1,intx)
     #sc=ax.imshow(tdm[index],origin='lower',cmap="hot_r")
     sns.set_style("dark")
     sns.heatmap(np.abs(lamda[vb+1:,:vb+1]),ax=ax,square=True,cmap='Spectral_r',mask=((np.abs(lamda[vb+1:,:vb+1])>820)|(np.abs(lamda[vb+1:,:vb+1])<350)),vmin=350,vmax=820)
     plt.xticks(list(x-selectband[0]),list(x) ,fontsize=24,rotation='-90')
-<<<<<<< HEAD
     plt.yticks(list(y-selectband[0]),list(y),fontsize=24,rotation='0')
-=======
-    plt.yticks(list(y-1-selectband[0]-vb),list(y),fontsize=24,rotation='0')
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
     #plt.xticks(list(x-selectband[0]),["VB-%d" % i for i in x[-1]-x[0:-1]]+["VB"] ,fontsize=24,rotation='-90')#-selectaaband[0])
     #plt.yticks(list(y-1-vb-selectband[0]),["CB"]+["CB+%d" % i for i in y[1:]-selectband[0]],fontsize=24,rotation='0')#-selectband[0]) 
     ax.invert_yaxis()
@@ -211,7 +189,6 @@ def plot_lamda(lamda,tdm,index,vb,selectband):
 def plot_tdm(tdm,index,vb,selectband):
     from mpl_toolkits.axes_grid1.inset_locator import inset_axes
     ax=plt.subplot(111)
-<<<<<<< HEAD
     intx=int((vb)/5)
     if intx <1:
         intx=1
@@ -220,25 +197,14 @@ def plot_tdm(tdm,index,vb,selectband):
     print(x,selectband[0]+vb+1)
     x=x+(selectband[0]+vb-np.max(x))
     #intx=4
-=======
-    intx=int((selectband[1]-selectband[0])/20)
-    if intx <1:
-        intx=1
-    x=np.arange(selectband[0],selectband[0]+vb+1,intx)
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
     y=np.arange(selectband[0]+vb+1,selectband[1]+1,intx)
     #x=np.arange(selectband[0],selectband[1]+1,intx)
     #y=np.arange(selectband[0],selectband[1]+1,intx)
     sc=ax.imshow(tdm[index,vb+1:,:vb+1],origin='lower',cmap="hot_r")
     #sns.set_style("white")
     #ax=sns.heatmap(tdm[index],ax=ax,square=True,cmap="hot_r")
-<<<<<<< HEAD
     plt.xticks(list(x-selectband[0])[:],list(x)[:],fontsize=24,rotation='-90')
     plt.yticks(list(y-1-selectband[0]-vb)[:],list(y)[:],fontsize=24,rotation='0')
-=======
-    plt.xticks(list(x-selectband[0]),list(x) ,fontsize=24,rotation='-90')
-    plt.yticks(list(y-1-selectband[0]-vb),list(y),fontsize=24,rotation='0')
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
     #plt.xticks(list(x-selectband[0]),["VB-%d" % i for i in x[-1]-x[0:-1]]+["VB"] ,fontsize=24,rotation='-90')#-selectaaband[0])
     #plt.yticks(list(y-1-vb-selectband[0]),["CB"]+["CB+%d" % i for i in y[1:]-selectband[0]],fontsize=24,rotation='0')#-selectband[0]) 
     ax.invert_xaxis()
@@ -300,11 +266,7 @@ def plot_tdm_byEnergy(Eig,ispin,ikpt,tdm,index,vb,selectband):
 
 
 read=input("read from old data\n")
-<<<<<<< HEAD
 figsize=(5,3.4)
-=======
-fig=plt.figure(figsize=(10,8))
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
 #read="T"
 if not read is "":
     tdm,iband,ikpt,ispin,vb,eig=np.load(read,allow_pickle=True)
@@ -332,7 +294,6 @@ lamda=1240/(eig_.T-eig_)
 print(eig_.shape,lamda.shape,(eig_.T-eig_).shape)
 print(iband)
 #plot_tdm_byEnergy(eig,ispin,ikpt,tdm,-1,vb,iband)
-<<<<<<< HEAD
 plt.rc('font',family='Times New Roman')
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 
@@ -344,16 +305,6 @@ plt.subplots_adjust(top=0.87)
 plt.savefig("tdm_%d_%d_%d_%d.jpg"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
 plt.show()
 fig=plt.figure(figsize=figsize)
-=======
-#plt.rc('font',family='Times New Roman')
-#matplotlib.rcParams['mathtext.fontset'] = 'stix'
-plot_tdm(tdm,-1,vb,iband)
-plt.tight_layout()
-plt.subplots_adjust(top=0.85)
-plt.savefig("tdm_%d_%d_%d_%d.jpg"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
-plt.show()
-fig=plt.figure(figsize=(10,8))
->>>>>>> a196afffc387ac6ef4a93f9425d91f6235ebe38c
 plot_lamda(lamda,tdm,-1,vb,iband)
 plt.tight_layout()
 plt.savefig("lamda_%d_%d_%d_%d.jpg"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
