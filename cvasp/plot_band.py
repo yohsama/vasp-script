@@ -15,6 +15,7 @@ from get_procar import get_procar
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.gridspec import GridSpec
 import matplotlib.lines as mlines
+from matplotlib.ticker import FormatStrFormatter
 import seaborn as sns
 class plot_band:
     def __init__(self):
@@ -93,7 +94,7 @@ class plot_band:
         if len(sE) > 0:
             ax.plot([sE['kpath']]*2,np.array([-1000,1000]),color='black')
             ax.set_xticks(sE['kpath'])
-            ax.set_xticklabels(sE['kpt_label'],fontsize=24)
+            ax.set_xticklabels(sE['kpt_label'])#)#,fontsize=24)
         if sE['kpath'].min()==kpoints['kpath'].max():
             ax.set_xlim([-0.5,0.5])
             ax.set_xticklabels([])
@@ -139,7 +140,7 @@ class plot_band:
             ax.set_xticklabels([])
         else:
             ax.set_xlim([kpoints['kpath'].min(),kpoints['kpath'].max()])
-        ax.set_yticklabels(ax.get_yticks(),fontsize=24)
+        ax.set_yticklabels(ax.get_yticks())#)#,fontsize=24)
         ## plot PBAND  ##
         ##
         #
@@ -257,17 +258,19 @@ class plot_band:
                         label=None
                 kp['T11']=kp['T12']
                 kp['T21']=kp['T22']
-            ax.legend(loc='upper right',fontsize=24)
+            ax.legend(loc='upper right')#)#,fontsize=24)
             ax_cbar=None
-            divider=None
+            divider=make_axes_locatable(plt.gca())
 
-        if plot_type==1:
+        if plot_type==11:
             #EIG1=EIG[ispin]-1/10
             LS=0
             Tex=[]
             T=[]
             kp['T11']=kp['eig']
             kp['T21']=kp['eig']
+            NN=0
+            NELE_A=[]
             for ele in type1_Ele:
                 TexA=[]
                 A=[]
@@ -280,33 +283,41 @@ class plot_band:
                     else:
                         TexA.append(r'$\mathrm{'+Ele_A+'}$')
                         orbit=['tot']
-                    mE=iE[(iE['ion']==Ele_A)][orbit+['band','kpt']].groupby(['kpt','band']).sum().reset_index()
+                    mE=iE[(iE['ion']==np.int(Ele_A))][orbit+['band','kpt']].groupby(['kpt','band']).sum().reset_index()
                     mE[iA]=mE[orbit].apply(lambda x: x.sum(), axis=1)
                     kp=kp.merge(mE[['band','kpt',iA]],how='outer')
                     A.append(iA)
+                    #NELE_A.append(np.double(Ele_A))
+                #print(NELE_A)
+                #mE=iE[(iE['ion'].isin(NELE_A))][orbit+['band','kpt']].groupby(['kpt','band']).sum().reset_index()
+                #kp[A]=mE[orbit].apply(lambda x: x.sum(), axis=1)
                 Tex.append(",".join(TexA))
-                label=",".join(ele[0])
+                label=NN
+                NN=NN+1
                 kp[label]=kp[A].apply(lambda x: x.sum(), axis=1)
                 width=100/(Elim[1]-Elim[0])
-                kp['T12']=kp['T11']+kp[label]/width
-                kp['T22']=kp['T21']-kp[label]/width
+                kp['T12']=kp['T11']+kp[label]/width*3
+                kp['T22']=kp['T21']-kp[label]/width*3
                 if kp['kpath'].max()==kp['kpath'].min():
                     for i in range(kp['band'].min(),kp['band'].max()+1):
                         kkp=kp[kp['band']==i]
-                        axfill=plt.fill_between([-0.5,0.5],kkp['T11'].values.repeat(2),kkp['T12'].values.repeat(2),color=ele[1],alpha=0.75,label=label)
-                        axfill=plt.fill_between([-0.5,0.5],kkp['T21'].values.repeat(2),kkp['T22'].values.repeat(2),color=ele[1],alpha=0.75)
+                        axfill=plt.fill_between([-0.5,0.5],kkp['T11'].values.repeat(2),kkp['T12'].values.repeat(2),color=ele[1],alpha=0.75,label=label,lw=0)
+                        axfill=plt.fill_between([-0.5,0.5],kkp['T21'].values.repeat(2),kkp['T22'].values.repeat(2),color=ele[1],alpha=0.75,lw=0)
                         label=None
                 else:
-                    for i in range(kp['band'].min(),kp['band'].max()+1):
+                    print(kp['band'].min(),kp['band'].max()+1)
+                    for i in range(int(kp['band'].min()),int(kp['band'].max()+1)):
                         kkp=kp[kp['band']==i]
-                        axfill=plt.fill_between(kkp['kpath'],kkp['T11'],kkp['T12'],color=ele[1],alpha=0.75,label=label)
-                        axfill=plt.fill_between(kkp['kpath'],kkp['T21'],kkp['T22'],color=ele[1],alpha=0.75)
+                        #plt.scatter(kkp['kpath'],kkp['eig'],s=kkp[label],color=ele[1],marker='o')
+                        axfill=plt.fill_between(kkp['kpath'],kkp['T11'],kkp['T12'],color=ele[1],alpha=1,label=label,lw=0)
+                        axfill=plt.fill_between(kkp['kpath'],kkp['T21'],kkp['T22'],color=ele[1],alpha=1,lw=0)
                         label=None
                 kp['T11']=kp['T12']
                 kp['T21']=kp['T22']
-            ax.legend(loc='upper right',fontsize=24)
+            ax.legend(markerscale=0.5,loc='upper right',ncol=(NN+1))#,fontsize=24)
+            ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
             ax_cbar=None
-            divider=None
+            divider=make_axes_locatable(plt.gca())
 
         return ax,ax_cbar,divider
 

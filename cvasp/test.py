@@ -9,7 +9,7 @@ plottype=int(input("fat_band/1,colormap_band/2\n"))
 type1_Ele=[]
 type2_Ele_A=[]
 type2_Ele_B=""
-if plottype==1:
+if plottype%10==1:
     tmp=(input("Element,split by \",\" color symbol\n"))
     while not tmp == "":
         type1=tmp.split()
@@ -52,7 +52,13 @@ if not tmp =="":
 else:
     figsize=(6,8)
 
-plt.rc('font',family='Times New Roman')
+tmp=input("fontsize \n").split()
+if not tmp =="":
+    fontsize=float(tmp[0])
+else:
+    fontsize='24'
+
+plt.rc('font',family='Times New Roman',size=fontsize)
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 
 #if True:
@@ -105,7 +111,7 @@ for ispin in range(ISPIN):
         WAVECARs.sort()
         ax.set_xticks=([])
         ax.set_xticklabels([])
-        ax_tdm= divider.append_axes('bottom', size="20%", pad=0.1)
+        ax_tdm= divider.append_axes('bottom', size="15%", pad=0.1)
         ax_tdm=plot_band.plot_sp_kline(kpoints,ax=ax_tdm)
         tdm_k=np.array([])
         ymax=0
@@ -117,10 +123,11 @@ for ispin in range(ISPIN):
             tdm_k,tdm=cal_tdm_byband(ispin,iselectband,coeff,igall,eig,occ,b)
             np.savetxt('tdm_cx.dat',tdm)
             print(tdm.shape)
-            ax_tdm=plot_tdm_band(kpoints,tdm[:,-1],0,label="_".join([str(i) for i in iselectband]),ax_tdm=ax_tdm)
+            ax_tdm=plot_tdm_band(kpoints,tdm[:,-1],0,label=iselectband,ax_tdm=ax_tdm)
             ymax=np.max((ymax,np.max(tdm_k)))
-        ax_tdm.set_ylim((0,ymax))
-        plt.legend()
+        #ax_tdm.set_yticklabels(ax.get_yticks())#,fontsize=24)
+        ax_tdm.set_ylim((0,ymax*1.1))
+        plt.legend( markerscale=0.5)#,fontsize=24)
     plt.tight_layout()
-    plt.savefig('band_%d.png' % ispin,dpi=360)
+    plt.savefig('band_%d.png' % ispin,dpi=300)
 plt.show()

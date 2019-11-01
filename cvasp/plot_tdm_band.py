@@ -74,7 +74,7 @@ def cal_tdm_byband(ispin,iband,coeff,igall,eig,occ,b):
 def plot_tdm_band(kpoints,tdm_k,ispin,label=None,ax_tdm=None):
     #print(kpoints)
     ax_tdm.set_xlim([np.min(kpoints['kpath']),np.max(kpoints['kpath'])])
-    ax_tdm.plot(kpoints['kpath'],tdm_k,label=label)
+    ax_tdm.plot(kpoints['kpath'],tdm_k,label=r'$P_{('+str(label[0])+','+str(label[1])+')}$')
    # ax_tdm.plot(tdm_k,label=label)
     return ax_tdm
 

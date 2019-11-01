@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import numpy as np
 import struct
 import scipy
@@ -274,9 +274,11 @@ if not read is "":
     tdm[:,:vb+1,:vb+1]=0
     tdm[:,vb+1:,vb+1:]=0
 else:
-    iband=[int(input("Start band\n")),int(input("End band\n"))]
-    ikpt=int(input("Kpoints\n"))
-    ispin=int(input("Ispin\n"))
+    tmp=(input("Start band,End band,Kpoints,ispin\n")).split()
+    print(tmp)
+    iband=[int(tmp[0]),int(tmp[1])]
+    ikpt=int(tmp[2])
+    ispin=int(tmp[3])
     coeff,igall,eig,occ=get_wave(path,iband)
     vb=int(np.sum(occ[ispin,ikpt]>0.001)-iband[0])
     np.save("occ.npy",occ)
@@ -300,12 +302,12 @@ matplotlib.rcParams['mathtext.fontset'] = 'stix'
 fig=plt.figure(figsize=figsize)
 plot_tdm(tdm,-1,vb,iband)
 plt.tight_layout()
-plt.subplots_adjust(top=0.87)
+plt.subplots_adjust(top=0.87,right=0.7)
 
-plt.savefig("tdm_%d_%d_%d_%d.jpg"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
+plt.savefig("tdm_%d_%d_%d_%d.png"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
 plt.show()
-fig=plt.figure(figsize=figsize)
-plot_lamda(lamda,tdm,-1,vb,iband)
-plt.tight_layout()
-plt.savefig("lamda_%d_%d_%d_%d.jpg"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
-plt.show()
+#fig=plt.figure(figsize=figsize)
+#plot_lamda(lamda,tdm,-1,vb,iband)
+#plt.tight_layout()
+#plt.savefig("lamda_%d_%d_%d_%d.pnb"%(ispin,ikpt,iband[0],iband[1]),dpi=360)
+#plt.show()
