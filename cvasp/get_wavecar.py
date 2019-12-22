@@ -45,14 +45,9 @@ class get_wavecar:
                 occ=np.concatenate((occ,occ_),axis=1)
         return eig,occ
     
-    def get_igall(WAVECARs,CONTCAR):
+    def get_igall(WAVECARs):
         #t1=time.time()
         c=0.26246582250210965422
-        try:
-            SYS=ase.io.read(CONTCAR,format='vasp')
-        except:
-            print("can't find CONTCAR")
-            return
         i=0
         for WAVECAR in WAVECARs:
             wavefile=open(WAVECAR,'rb')

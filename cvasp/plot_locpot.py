@@ -61,7 +61,9 @@ plt.xlim([np.min(range(NG[_axe])/NG[_axe]*np.linalg.norm(cell[(2,1,0)[_axe],:]))
 plt.xticks(fontsize=30,rotation='0')
 plt.yticks(fontsize=30,rotation='0')
 plt.tight_layout()
-print(np.min(np.average(LOC_DAT_A,axis=axe))-np.max(np.average(LOC_DAT_A,axis=axe)))
-plt.savefig("LOC_%s.jpg" % sys.argv[1])
-plt.show()
+#print(np.min(np.average(LOC_DAT_A,axis=axe))-np.max(np.average(LOC_DAT_A,axis=axe)))
+np.save('loc.npy',LOC_DAT_A)
+plt.savefig("LOC_%s.png" % sys.argv[1])
+
+#plt.show()
 

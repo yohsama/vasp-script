@@ -55,14 +55,8 @@ def make_k_path(KPOINTS_files,rep):
                 kpt_label[i]=lastlabel+r'$\vert$'+kpt_label[i]
             lastlabel=kpt_label[i]
             last=i
-    kpath=np.cumsum(np.linalg.norm(kpath.dot(rep),axis=1))
-    kpath=kpath[1:]
-    kpt_label=np.array(kpt_label)
+    KPATH=np.cumsum(np.linalg.norm(kpath.dot(rep),axis=1))[1:]
+    KLABEL=np.array(kpt_label[1:])
     KPOINTS=KPOINTS[1:]
-    kpt_label=kpt_label[1:]
-    kpoints=pd.DataFrame(KPOINTS,columns=('kpoint1','kpoint2','kpoint3'))
-    kpoints['kpath']=kpath
-    kpoints['kpt_label']=kpt_label
-    kpoints['kpt']=np.arange(kpath.size)
-    return kpoints
+    return KPATH,KLABEL,KPOINTS
     

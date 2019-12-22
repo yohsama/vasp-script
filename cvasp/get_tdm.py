@@ -10,7 +10,7 @@ from get_wavecar import get_wavecar
 path='./'
 selectband=[[81,82]]
 
-coeff,igall,eig,occ=get_wavecar('./WAVECAR','./CONTCAR',selectband)
+coeff,igall,eig,occ=get_wavecar('./WAVECAR',selectband)
 
 def calc_tdm(coeff_,eig_,igall_):
     print('start')

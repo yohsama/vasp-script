@@ -4,31 +4,38 @@ import sys
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import pandas as pd
 from glob import glob
+from set_group import set_group
 ISPIN=int(input("ISPIN\n"))
 plottype=int(input("fat_band/1,colormap_band/2\n"))
 type1_Ele=[]
 type2_Ele_A=[]
 type2_Ele_B=""
+GROUP=[]
+GROUP_INFO=[]
 if plottype%10==1:
-    tmp=(input("Element,split by \",\" color symbol\n"))
+    tmp=(input("Element,split by ',' color tag \n"))
     while not tmp == "":
         type1=tmp.split()
-        print(type1)
-        Element=type1[0].split(",")
+        #print(type1)
+        GROUP.append(type1[0])
+        GROUP_INFO.append(type1[1:])
         #if len(type1)<4:
         #    type1.append("")
-        type1_Ele.append([Element,type1[1]])
         tmp=(input("Element,split by \",\" color symbol; Enter to end\n"))
 
 
 if plottype==2:
     tmp=(input("Element,split by \",\"\n"))
-    type2_Ele_A=tmp.split(",")
+    GROUP.append(tmp.split()[0])
+    GROUP_INFO.append(tmp.split()[1])
     tmp=input("Part B ? ENTER for EXIT, any words for CONTINUE\n")
     if not tmp =="":
-        type2_Ele_B=tmp.split(",")
+        type1=tmp.split()
+        GROUP.append(type1[0])
+        GROUP_INFO.append(type1[1])
     else:
         type2_Ele_B=False
+        GROUP_INFO.append("")
 
 tmp=input("Energy ymin ymax\n").split()
 print(tmp)
@@ -63,44 +70,60 @@ matplotlib.rcParams['mathtext.fontset'] = 'stix'
 
 #if True:
 try :
-    project=pd.read_csv('./project.csv')
+    project=np.load('./project.npy',allow_pickle=True)
     print("read successful")
-    kpoints=plot_band.from_kpoints(path='.',read=False,save=True)
+    kpath=plot_band.from_kpoints(path='.',read=False,save=True)
 except Exception as e:
     print("try to read but fail\n",e)
+    #PRO,EIG,OCC,TTOT,KPOINTS
     project=plot_band.from_procar(ISPIN=ISPIN,read=True)
-    kpoints=plot_band.from_kpoints(path='.',KPOINTS='KPOINTS',read=False,save=True)
+    #KPATH,KLABEL,KPOINTS=
+    kpath=plot_band.from_kpoints(path='.',KPOINTS='KPOINTS',read=False,save=True) 
     #project=project.merge(kpoints[['kpath','kpt','kpt_label']])
     #project=plot_band.add_info_symbol(project=project,CONTCAR_file='./CONTCAR')
-    project['eig']=project['eig']-project[project['occ']>0.001]['eig'].max()
-    project.to_csv('./project.csv')
+    #project['eig']=project['eig']-project[project['occ']>0.001]['eig'].max()
+    np.save('./project.npy',project)
 
-project=plot_band.add_info_symbol(project=project,CONTCAR_file='./CONTCAR')
-for ispin in range(ISPIN):
+PRO,EIG,OCC,TTOT,KPOINTS=project
+KPATH,KLABEL,KPOINTS=kpath
+#print(KLABEL)
+set_fermi=input('set fermi to zero?')
+if 'T' in set_fermi:
+    FERMI=plot_band.get_fermi(EIG,OCC)
+    #project['eig']=project['eig']-project[project['occ']>0.001]['eig'].max()
+elif not set_fermi is "":
+    FERMI=np.float(set_fermi)
+else:
+    FERMI=0
+    #project['eig']=project['eig']-float(set_fermi)
+SYMBOL=plot_band.get_symbol(CONTCAR_file='./CONTCAR')
+for ispin in range(EIG.shape[0]):
     fig=plt.figure(figsize=figsize)
     #if plot_type!=2:
     # set special K-points
-    vbm=project[project['occ']>0.001]['eig'].max()
-    cbm=project[project['occ']<=0.001]['eig'].min()
-    dElim=(Elim[1]-Elim[0])
-    if False: #(cbm-vbm)>(dElim/10):
-        try:
-            from brokenaxes import brokenaxes
- #           print(vbm+dElim/20,cbm-dElim/20)
-            ax = brokenaxes(ylims=((Elim[0],vbm+dElim/20),(cbm-dElim/20,Elim[1])), subplot_spec=())
-            print('yes')
-        except Exception as e:
-            print(e)
-            ax=plt.subplot()
-            ax.set_ylim((Elim[0],Elim[1]))
+    ax=plt.subplot()
+    ax.set_ylim((Elim[0],Elim[1]))
+    if kpath[0].min()==kpath[0].max():
+        ax.set_xlim([-0.5,0.5])
+        ax.set_xticklabels([])
     else:
-        ax=plt.subplot()
-        ax.set_ylim((Elim[0],Elim[1]))
+        ax.set_xlim([kpath[0].min(),kpath[0].max()])
+
     #ax.set_xlim([kpoints['kpath'].min(),kpoints['kpath'].max()])
     #ax.set_yticklabels(ax.get_yticks(),fontsize=20)
+    PRO_GROUP=set_group(PRO,SYMBOL,group=GROUP)
+    ax,ax_cbar,divider=plot_band.plot_pband(
+                    plot_type=plottype,
+                    kpath=kpath,
+                    eig=EIG[ispin],
+                    pro_group=PRO_GROUP[:,ispin],
+                    group_info=GROUP_INFO,
+                    ax=ax,
+                    ispin=ispin,
+                    fermi=FERMI,
+                    )
 
-    ax,ax_cbar,divider=plot_band.plot_pband(ax=ax,plot_type=plottype,kpoints=kpoints,project=project,ispin=ispin,Elim=Elim,type1_Ele=type1_Ele,type2_Ele_A=type2_Ele_A,type2_Ele_B=type2_Ele_B)
-    ax=plot_band.plot_sp_kline(kpoints,ax=ax)
+    ax=plot_band.plot_sp_kline(kpath,ax=ax)
 
     if tdm:
         from plot_tdm_band import *
@@ -112,18 +135,18 @@ for ispin in range(ISPIN):
         ax.set_xticks=([])
         ax.set_xticklabels([])
         ax_tdm= divider.append_axes('bottom', size="15%", pad=0.1)
-        ax_tdm=plot_band.plot_sp_kline(kpoints,ax=ax_tdm)
+        ax_tdm=plot_band.plot_sp_kline(kpath,ax=ax_tdm)
         tdm_k=np.array([])
         ymax=0
         for iselectband in selectband:
             eig,occ=get_wavecar.get_eig(WAVECARs)
-            igall,b=get_wavecar.get_igall(WAVECARs,CONTCAR)
+            igall,b=get_wavecar.get_igall(WAVECARs)
             iband=np.arange(iselectband[0],iselectband[1]+1)
             coeff=get_wavecar.get_coeff(WAVECARs,iband)
             tdm_k,tdm=cal_tdm_byband(ispin,iselectband,coeff,igall,eig,occ,b)
             np.savetxt('tdm_cx.dat',tdm)
-            print(tdm.shape)
-            ax_tdm=plot_tdm_band(kpoints,tdm[:,-1],0,label=iselectband,ax_tdm=ax_tdm)
+            #print(tdm.shape)
+            ax_tdm=plot_tdm_band(kpath,tdm[:,-1],0,label=iselectband,ax_tdm=ax_tdm)
             ymax=np.max((ymax,np.max(tdm_k)))
         #ax_tdm.set_yticklabels(ax.get_yticks())#,fontsize=24)
         ax_tdm.set_ylim((0,ymax*1.1))

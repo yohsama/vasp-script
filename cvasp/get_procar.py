@@ -71,25 +71,25 @@ def get_procar(PROCAR_files,ISPIN):
             TTOT=np.concatenate((TTOT,TTOT_),axis=1)
             KPOINTS=np.concatenate((KPOINTS,KPOINTS_),axis=0)
         i=i+1
-        spin    = np.arange(PRO.shape[0]).repeat(PRO.shape[1]).repeat(PRO.shape[2]).repeat(PRO.shape[3]).flatten()
-        kpt     = np.tile(np.arange(PRO.shape[1]).repeat(PRO.shape[2]).repeat(PRO.shape[3]),PRO.shape[0]).flatten()
-        band    = np.tile(np.tile(np.arange(PRO.shape[2]).repeat(PRO.shape[3]),PRO.shape[1]),PRO.shape[0]).flatten()+1
-        ion     = np.tile(np.tile(np.tile(np.arange(PRO.shape[3]),PRO.shape[2]),PRO.shape[1]),PRO.shape[0]).flatten()+1
-        ttot    = TTOT.repeat(PRO.shape[3])
-        KPOINTS1= np.tile(KPOINTS[:,0].repeat(N_ions).repeat(N_band),ISPIN).flatten()
-        KPOINTS2= np.tile(KPOINTS[:,1].repeat(N_ions).repeat(N_band),ISPIN).flatten()
-        KPOINTS3= np.tile(KPOINTS[:,2].repeat(N_ions).repeat(N_band),ISPIN).flatten()
-        occ     = OCC.repeat(PRO.shape[3])
-        eig     = EIG.repeat(PRO.shape[3])
-        procar=pd.DataFrame(PRO.reshape((int(PRO.size/PRO.shape[-1]),PRO.shape[-1])),columns=('s','py','pz','px','dxy','dyz','dz2','dxz','dx2-y2','tot')  )
-        procar['ttot']=ttot
-        procar['spin']=spin
-        procar['kpt']=kpt
-        procar['band']=band
-        procar['ion']=ion
-        procar['occ']=occ
-        procar['eig']=eig
-        procar['kpoints1']=KPOINTS1
-        procar['kpoints2']=KPOINTS2
-        procar['kpoints3']=KPOINTS3
-    return procar
+        #spin    = np.arange(PRO.shape[0]).repeat(PRO.shape[1]).repeat(PRO.shape[2]).repeat(PRO.shape[3]).flatten()
+        #kpt     = np.tile(np.arange(PRO.shape[1]).repeat(PRO.shape[2]).repeat(PRO.shape[3]),PRO.shape[0]).flatten()
+        #band    = np.tile(np.tile(np.arange(PRO.shape[2]).repeat(PRO.shape[3]),PRO.shape[1]),PRO.shape[0]).flatten()+1
+        #ion     = np.tile(np.tile(np.tile(np.arange(PRO.shape[3]),PRO.shape[2]),PRO.shape[1]),PRO.shape[0]).flatten()+1
+        #ttot    = TTOT.repeat(PRO.shape[3])
+        #KPOINTS1= np.tile(KPOINTS[:,0].repeat(N_ions).repeat(N_band),ISPIN).flatten()
+        #KPOINTS2= np.tile(KPOINTS[:,1].repeat(N_ions).repeat(N_band),ISPIN).flatten()
+        #KPOINTS3= np.tile(KPOINTS[:,2].repeat(N_ions).repeat(N_band),ISPIN).flatten()
+        #occ     = OCC.repeat(PRO.shape[3])
+        #eig     = EIG.repeat(PRO.shape[3])
+        #procar=pd.DataFrame(PRO.reshape((int(PRO.size/PRO.shape[-1]),PRO.shape[-1])),columns=('s','py','pz','px','dxy','dyz','dz2','dxz','dx2-y2','tot')  )
+        #procar['ttot']=ttot
+        #procar['spin']=spin
+        #procar['kpt']=kpt
+        #procar['band']=band
+        #procar['ion']=ion
+        #procar['occ']=occ
+        #procar['eig']=eig
+        #procar['kpoints1']=KPOINTS1
+        #procar['kpoints2']=KPOINTS2
+        #procar['kpoints3']=KPOINTS3
+    return PRO,EIG,OCC,TTOT,KPOINTS
