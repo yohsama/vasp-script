@@ -1,0 +1,6 @@
+import numpy as np
+
+hartree2eV=13.605826
+au2anstrom=0.529177249
+au2debye=2.541746
+c=0.26246582250210965422

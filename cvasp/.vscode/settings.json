@@ -1,0 +1,6 @@
+{
+    "python.pythonPath": "/data/software/system/anaconda3/bin/python",
+    "code-runner.fileDirectoryAsCwd": true
+    "cwd": "${fileDirname}"
+    
+}
