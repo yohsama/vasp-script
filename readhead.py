@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import sys
 from glob import glob
 
@@ -11,7 +11,7 @@ import itertools
 from readvasp import *
 import plotting
 iniset={}
-class plotset(object):
+class plotset:
     def __init__(self):
         pass
     def group_info_from_input(self,iniset,type):
@@ -151,20 +151,20 @@ def plotband():
         iniset['onefigure']=False
     for ispin in range(data.I_spin):
         if (not iniset['onefigure'])  | (ispin==0):
-            fig=plt.figure(figsize=iniset['figsize'])
-            ax=plt.subplot()
-        ax.set_ylim(iniset['Elim'])
+            fig,ax=plt.subplots(figsize=iniset['figsize'])
         pltband=plotting.plot_band(ispin=ispin,kpath=kpt.kpath,sp_kpt_label=kpt.sp_kpt_label,data=data,iniset=iniset)
         if iniset['plot_type'] > 0:
             ax,divider,ax_cbar=pltband.plot_band(   plot_type=iniset['plot_type'],
-                                                    pro_group=data.set_group(iniset['group_tag'],symbollist)[:,ispin],
+                                                    pro_group=data.set_group(iniset['group_tag'],symbollist)[ispin],
                                                     group_info=iniset['group_info'],
                                                     ax=ax)
         else:
             ax,divider,ax_cbar=pltband.plot_band(   iniset['plot_type'],ax=ax)
         ax.set_xlim((pltband.kpath_intr.min(),pltband.kpath_intr.max()))
-        fig.subplots_adjust(0.3,0.2,0.5,0.9)
-        ax.legend(loc='right', bbox_to_anchor=(3.5, 0.6),frameon=False)
+        ax.set_ylim(iniset['Elim'])
+        fig.subplots_adjust(0.3,0.2,0.7,0.9)
+        ax.legend(bbox_to_anchor=(1,1), loc="upper left",frameon=False)
+        #ax.legend(frameon=False)
         if iniset['tdm']!=False:
             tdmeig=np.zeros((data.I_spin,kpt.kpath.size,iniset['tdm'].size))
             ax.set_xticks([])
@@ -184,14 +184,14 @@ def plotband():
             ax_tdm.set_ylim((0,np.max(tdm.eig)))
             #plt.legend( markerscale=0.5)#,fontsize=24)
         #plt.tight_layout()
-        #plt.savefig('band_%d.png' % ispin,dpi=300)
+        plt.savefig('band_%d.png' % ispin,dpi=300)
     plt.show()
 
 def plotdos():
     iniset=plotset().read_from_input(2)
     data=from_doscar.get_doscar()
-    plt.figure(figsize=iniset['figsize'])
-    ax=plt.subplot()
+    #fig=plt.figure(figsize=iniset['figsize'])
+    fig,ax=plt.subplots(figsize=iniset['figsize'])
     ax.set_xlim(iniset['Elim'])
     pltdos=plotting.plot_dos(data,iniset=iniset)
     if iniset['plot_type']>0:
@@ -206,6 +206,13 @@ def plotdos():
     else:
         Ymin=0
     ax.set_ylim((   Ymin,   Ymax))
+    if iniset['plot_type']>0:
+        ax.set_ylabel(r'$\mathrm{Projected\ Density\ of\ State}$')
+    ax.set_ylabel(r'$\mathrm{Density\ of\ State}$')
+    ax.set_yticks([])
+    ax.set_xlabel(r'$\mathrm{E}-\mathrm{E}_f$')
+    plt.tight_layout()
+    plt.savefig('dos.png')
     plt.show()
 
 if __name__ == "__main__":

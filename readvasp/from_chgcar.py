@@ -6,101 +6,74 @@ import numpy as np
 
 
 class get_chgcar(object):
-    def __init__(self,LOCPOT='CHGCAR'):
-        self.__file_name__=LOCPOT
-        self.__file__=open(self.__file_name__)
-        get_chgcar()
+    def __init__(self, LOCPOT='CHGCAR'):
+        self.__file_name__ = LOCPOT
+        self.__file__ = open(self.__file_name__)
+        self.get_chgcar()
 
     def get_chgcar(self):
-        tmp=self.__file__.readline()
-        tmp=self.__file__.readline()
-        self.scale=float(tmp.split()[0])
-        cell=np.zeros((3,3))
+        self.system = self.__file__.readline()[:-2]
+        self._factor_ = float(self.__file__.readline().split()[0])
+        self.cell = np.zeros((3, 3))
         for i in range(3):
-            tmp=self.__file__.readline()
-            cell[i,:]=tmp.split()[:3]
-        self.element=self.__file__.readline().split()
-        self.N_ions=np.array(self.__file__.readline().split(),dtype=np.int)
-        tmp=self.__file__.readline()
-        for i in range(np.sum(self.N_ions)):
-            self.positions=np.array(self.__file__.readline().split(),dtype=np.float)
-        tmp=self.__file__.readline()
-        tmp=self.__file__.readline()
-        self.NGX,self.NGY,self.NGZ=np.array(tmp.split()[:3],dtype='int')
-        self.NG=(self.NGZ,self.NGY,self.NGX)
-        LOC_DAT=[]
+            self.cell[i, :] = self.__file__.readline().split()[:3]
+        self.element = self.__file__.readline().split()
+        self.N_ions = np.array(self.__file__.readline().split(), dtype=np.int)
+        self.type = self.__file__.readline()[:-2]
+        self.positions = np.array([
+            np.array(self.__file__.readline().split(), dtype=np.float)
+            for i in range(np.sum(self.N_ions))
+        ])
+
+        self.__file__.readline()
+        self.NG = np.array(self.__file__.readline().split()[:3], dtype='int')
+        LOC_DAT = []
         for itmp in self.__file__:
             LOC_DAT.extend(itmp.split())
         try:
-            self.chg=np.array(LOC_DAT,dtype='double').reshape((1,*self.NG))
+            self.chg = np.array(LOC_DAT[:np.prod(self.NG)],
+                                dtype=np.double).reshape((1, *self.NG),
+                                                         order='F')
         except:
-            LOC_DATA=np.array(LOC_DAT[:np.prod(self.NG)],dtype='double').reshape(self.NG)
-            LOC_DATB=np.array(LOC_DAT[-np.prod(self.NG):],dtype='double').reshape(self.NG)
-            self.chg=np.vstack(((LOC_DATA+LOC_DATB)/2,(LOC_DATA-LOC_DATB)/2))
+            LOC_DATA = np.array(LOC_DAT[:np.prod(self.NG)],
+                                dtype=np.double).reshape(self.NG, order='F')
+            LOC_DATB = np.array(
+                LOC_DAT[len(LOC_DAT) // 2 + 3:len(LOC_DAT) // 2 +
+                        np.prod(self.NG) + 3],
+                dtype=np.double).reshape(self.NG, order='F')
+            self.chg = np.stack(
+                ((LOC_DATA + LOC_DATB) / 2, (LOC_DATA - LOC_DATB) / 2))
 
-    def get_locpot(self):
-        self.__init__('./POTCAR')
+    def write_spin_chg(self):
+        write_chgcar(self, self.chg[0], self.__file__.name + "_alpha")
+        write_chgcar(self, self.chg[1], self.__file__.name + "_beta")
 
-    def get_pchg(self):
-        self.__init__('./PCHGCAR')
 
-    def writen_spin_chg(self):
-        self.__file__.seek(0)
-        LOC=self.__file__
-        LOC_a=open(self.__file_name__+"_alpha",'w')
-        LOC_b=open(self.__file_name__+"_beta",'w')
-        tmp=LOC.readline()
-        LOC_a.write(tmp)
-        LOC_b.write(tmp)
-        tmp=LOC.readline()
-        LOC_a.write(tmp)
-        LOC_b.write(tmp)
-        cell=np.zeros((3,3))
-        for i in range(3):
-            tmp=LOC.readline()
-            LOC_a.write(tmp)
-            LOC_b.write(tmp)
-            cell[i,:]=tmp.split()[:3]
-        tmp=LOC.readline()
-        LOC_a.write(tmp)
-        LOC_b.write(tmp)
-        tmp=LOC.readline()
-        LOC_a.write(tmp)
-        LOC_b.write(tmp)
-        NIONS=np.array(tmp.split(),dtype='int')
-        NIONS_TOT=np.sum(NIONS)
-        tmp=LOC.readline()
-        LOC_a.write(tmp)
-        LOC_b.write(tmp)
-        for i in range(NIONS_TOT):
-            tmp=LOC.readline()
-            LOC_a.write(tmp)
-            LOC_b.write(tmp)
-        tmp=LOC.readline()
-        LOC_a.write(tmp)
-        LOC_b.write(tmp)
-        tmp=LOC.readline()
-        LOC_a.write(tmp)
-        LOC_b.write(tmp)
-        NGX,NGY,NGZ=np.array(tmp.split()[:3],dtype='int')
-        NG=(NGZ,NGY,NGX)
-        LOC_DAT=[]
-        for itmp in LOC:
-            LOC_DAT.extend(itmp.split())
-        LOC_DAT=[np.array(LOC_DAT[:np.prod(NG)],dtype='double'),np.array(LOC_DAT[-np.prod(NG):],dtype='double')]
-        LOC_DAT_a=(LOC_DAT[0]+LOC_DAT[1])/2
-        LOC_DAT_b=(LOC_DAT[0]-LOC_DAT[1])/2
-        count=0
-        for temp in LOC_DAT_a:
-            count+=1
-            print("%12.9f" % temp,end=" ",file=LOC_a)
-            if(count%5==0):
-                print("", file=LOC_a)
-        LOC_a.close()
-        for temp in LOC_DAT_b:
-            count+=1
-            print("%12.9f" % temp,end=" ",file=LOC_b)
-            if(count%5==0):
-                print("",file=LOC_b,flush=True)
-        LOC_b.close()
+def write_chgcar(chg, data, file):
+    with open(file, 'w') as f:
+        print(chg.system, file=f)
+        print(' {: 18.15f}'.format(chg._factor_), file=f)
+        np.savetxt(f, chg.cell, fmt='  % 11.6f% 11.6f% 11.6f')
+        print(*chg.element, file=f)
+        np.savetxt(f, chg.N_ions[None, :], fmt='%d')
+        print(chg.type, file=f)
+        np.savetxt(f, chg.positions, fmt='% 10.6f')
+        print("", file=f)
+        np.savetxt(f, np.array(chg.NG)[None, :], fmt='%d')
+        cols = data.size // 5
+        np.savetxt(f,
+                   data.reshape(-1, order='F')[:5 * cols].reshape(-1, 5),
+                   fmt='% 18.11e')
+        np.savetxt(f,
+                   data.reshape(-1, order='F')[None, 5 * cols:],
+                   fmt='% 18.11e')
 
+
+def diff1(chg_total, chg_A, chg_B):
+    data = chg_total.chg - chg_A.chg - chg_B.chg
+    write_chgcar(chg_total, data, chg_total.__file__.name + "_diff")
+
+
+def diff2(chg_total, chg_A, chg_B, chg_C):
+    data = chg_total.chg - chg_A.chg - chg_B.chg - chg_C.chg
+    write_chgcar(chg_total, data, chg_total.__file__.name + "_diff")

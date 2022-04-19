@@ -10,13 +10,13 @@ class get_procar:
     def __init__(self, PRO_FILES=['PROCAR']):
         self.__file__ = PRO_FILES
         for i, pfile in enumerate(PRO_FILES):
-            print('reading %s' % pfile)
             if i == 0:
-                self.L_orbit, self.eig, self.occ, self.project, self.kpoint, self.Kwht, self.N_ions = get_all_project_band(
+                self.eig, self.occ, self.project, self.kpoint, self.Kwht, self.N_ions = get_all_project_band(
                     pfile)
                 self.N_spin, self.N_kpt, self.N_Band = self.eig.shape
+                self.N_kpt = self.eig.shape
             else:
-                L_orbit, eig, occ, project, kpoint, Kwht, N_ions = get_all_project_band(pfile)
+                eig, occ, kpoint, Kwht, N_ions = get_all_project_band(pfile)
                 if (self.N_ions != N_ions):
                     print("Different ions found, last file is %s" % pfile)
                 elif (self.N_Band != eig.shape[2]):
@@ -27,15 +27,15 @@ class get_procar:
                 else:
                     self.eig = np.append(self.eig, eig, axis=1)
                     self.occ = np.append(self.occ, occ, axis=1)
-                    self.project = np.append(self.project, project, axis=1)
+                    self.project = np.append(self.occ, occ, axis=1)
                     self.kpoint = np.append(self.kpoint, kpoint, axis=0)
                     self.Kwht = np.append(self.Kwht, Kwht, axis=0)
                     self.N_kpt += eig.shape[1]
 
         self.fermi = ultils.get_fermi(self.eig, self.occ)
 
-    def set_group(self, grouptag, symbollist):
-        return ultils.set_group(self.L_orbit, self.project, grouptag, symbollist)
+        return
+
 
 def __get_L_orbit__(PROCAR='PROCAR'):
     with open(PROCAR) as __file__:
@@ -112,7 +112,7 @@ def get_all_project_band(PROCAR='PROCAR'):
                 tmp = __file__.readline()
             __file__.readline()
         print("PROCAR read complete")
-    return L_orbit, eig, occ, project, kpoint, wht, N_ions
+    return eig, occ, project, kpoint, wht, N_ions
 
 
 def get_sp_project_band(PROCAR='PROCAR'):
@@ -160,7 +160,8 @@ def get_sp_project_band(PROCAR='PROCAR'):
                 tmp = __file__.readline()
             __file__.readline()
         print("PROCAR read complete")
-    return L_orbit, eig, occ, project, kpoint, wht, N_ions
+    return eig, occ, project, kpoint, wht, N_ions
 
 
-
+def set_group(self, grouptag, symbollist, norm=True):
+    return ultils.set_group(self, grouptag, symbollist, norm=True)

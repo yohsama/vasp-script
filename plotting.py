@@ -76,7 +76,7 @@ class plot_band(object):
         elif plot_type==2:
             ax,divider,ax_cbar=self.plot_type_2(pro_group=pro_group,group_info=group_info,ax=ax,divider=divider,ax_cbar=ax_cbar)
         ax,divider,ax_cbar=self.plot_sp_kline(ax=ax,divider=divider,ax_cbar=ax_cbar)
-        if not self.L_fermi:
+        if self.L_fermi:
             ax.set_ylabel(r'$\mathrm{E-E_f (eV)}$')
         else:
             ax.set_ylabel(r'$\mathrm{E (eV)}$')
@@ -92,7 +92,7 @@ class plot_band(object):
             if (len(self.kpath) > 1):
                 ax.plot([self.kpath_sp]*2,np.array([-1000,1000]),color='black')
             ax.set_xticks(self.kpath_sp)
-            ax.set_xticklabels(self.sp_kpt_label[[ (i != "")&( not "!" in i) for i in self.sp_kpt_label]])
+            ax.set_xticklabels([ i for i in self.sp_kpt_label if i])
         return ax,divider,ax_cbar
 
 
@@ -171,7 +171,7 @@ class plot_dos(object):
             ax=plt.subplot()
         if plottype==0:
             ax.plot(self.dos.Energy,self.dos.total.T-self.fermi)
-        elif plottype==1:
+        elif plottype>0:
             if (pro_group is None) | (group_info is None):
                 raise ValueError(" There is no group info input")
             ax=self.plot_pdos(pro_group,group_info,ax=ax)
@@ -193,12 +193,13 @@ class plot_dos(object):
             #plt.fill_between(self.dos.Energy-self.fermi,self.dos.total[ispin].T, color='gray', alpha=.25,label=label)
             for i,igroup in enumerate(pro_group):
                 if ispin==0:
-                    label=r''+group_info[i][0]
+                    label=r''+group_info[0,i]
                 else:
                     label=None
-                ax.plot(self.dos.Energy-self.fermi,igroup[ispin].T,c=group_info[i][1])
+                ax.plot(self.dos.Energy-self.fermi,igroup[ispin].T,c=group_info[1,igroup])
                 plt.fill_between(self.dos.Energy-self.fermi,igroup[ispin].T, color=group_info[i][1], alpha=.25,label=label)
         ax.legend(loc='right', bbox_to_anchor=(1, 0.6))
+        #plt.show()
         return ax
 
 class plot_chg(object):
@@ -208,13 +209,16 @@ class plot_chg(object):
         """
         self.chg=chg
         pass
-    def line_average(self,ispin,abc_axe,ax=plt.subplot()):
+    def line_average(self,ispin,abc_axe,ax=None):
+
         """
         average alone a axis
         _axe = 
         'a','b','c' alone the lattice constant
         //'x','y','z' alone the x,y,z direction
         """
+        if ax is None:
+            ax=plt.subplot()
         _axe=['c','b','a'].index(abc_axe)
         #_axe=int(sys.argv[1])-1
         axe=[0,1,2]
