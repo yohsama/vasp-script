@@ -1,7 +1,8 @@
-import numpy as np
 import re
 
-from numpy.lib.shape_base import expand_dims
+import numpy as np
+
+kb = 1.380649*10**-23
 
 
 def get_fermi(EIG, OCC, OCC_E=0.001):
@@ -132,7 +133,6 @@ def get_energy(eig=None, occ=None, info=None):
 
 def color_line(X,Y,C,ax=None,cmap="rainbow"):
     from matplotlib.collections import LineCollection
-    import matplotlib.pyplot as plt
     if ax is None:
         ax=plt.subplot()
     norm = plt.Normalize(0, 1)
