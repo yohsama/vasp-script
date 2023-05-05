@@ -85,20 +85,18 @@ def read_config(file='cvasp.yml'):
 
 
 def cvasp(config, axs=None):
-    # plt.rc('font',family=config["fontset"]["font"],size=config["fontset"]["fontsize"])
-    # plt.rcParams['font.serif'] = [config["fontset"]["font"]] + plt.rcParams['font.serif']
     print(config["plotset"]["object"].lower())
     if config["plotset"]["object"].lower() == "band":
-        if config["plotset"]["plot_type"] > 0:
-            data = from_procar.get_procar(config["fileset"]["prosfile"])
-        else:
-            data = from_eigenval.get_eigenvalue(config["fileset"]["eigfile"])
         KPT = from_kpoints.get_kpoints(config["fileset"]["kptfile"])
-        plotting2.plot_band(KPT, data, config, axs=axs)
+        if config["plotset"]["plot_type"] > 0:
+            eigdata = from_procar.get_procar(config["fileset"]["prosfile"])
+        else:
+            eigdata = from_eigenval.get_eigenvalue(config["fileset"]["eigfile"])
+        plotting2.plot_band(KPT, eigdata, config, axs=axs)
 
     if config["plotset"]["object"].lower() == "dos":
-        data = from_doscar.get_doscar(config["fileset"]["dosfile"])
-        plotting2.plot_dos(data, config, axs=axs)
+        dosdata = from_doscar.get_doscar(config["fileset"]["dosfile"])
+        plotting2.plot_dos(dosdata, config, axs=axs)
 
     if "band" in config["plotset"]["object"].lower() and \
        "dos" in config["plotset"]["object"].lower():
@@ -106,10 +104,10 @@ def cvasp(config, axs=None):
         if config["plotset"]["plot_type"] > 0:
             eigdata = from_procar.get_procar(config["fileset"]["prosfile"])
         else:
-            eigdata = from_eigenval.get_eigenvalue(
-                config["fileset"]["eigfile"])
+            eigdata = from_eigenval.get_eigenvalue(config["fileset"]["eigfile"])
         dosdata = from_doscar.get_doscar(config["fileset"]["dosfile"])
         plotting2.plot_band_dos(KPT, eigdata, dosdata, config, axs=axs)
+
 
 
 if __name__ == "__main__":
@@ -126,35 +124,23 @@ if __name__ == "__main__":
     plt.rcParams['font.serif'] = [config["fontset"]
                                   ["font"]] + plt.rcParams['font.serif']
     print(config["plotset"]["object"].lower())
-    if config["plotset"]["object"].lower() == "band":
-        if config["plotset"]["plot_type"] > 0:
-            data = from_procar.get_procar(config["fileset"]["prosfile"])
-        else:
-            data = from_eigenval.get_eigenvalue(config["fileset"]["eigfile"])
-        ispin = data.N_spin
-        fig, axs = plt.subplots(1, len(config["groupinfo"])*ispin,
-                                figsize=config["figset"]["figsize"], sharey=True)
-        KPT = from_kpoints.get_kpoints(config["fileset"]["kptfile"])
-        plotting2.plot_band(KPT, data, config, axs=axs)
-
-    if config["plotset"]["object"].lower() == "dos":
-        fig, ax = plt.subplots(1, 1,
-                               figsize=config["figset"]["figsize"])
-        data = from_doscar.get_doscar(config["fileset"]["dosfile"])
-        plotting2.plot_dos(data, config, ax=ax)
-
-    if "band" in config["plotset"]["object"].lower() and \
-       "dos" in config["plotset"]["object"].lower():
-        KPT = from_kpoints.get_kpoints(config["fileset"]["kptfile"])
+    ispin=1
+    if "band" in config["plotset"]["object"].lower():
         if config["plotset"]["plot_type"] > 0:
             eigdata = from_procar.get_procar(config["fileset"]["prosfile"])
         else:
-            eigdata = from_eigenval.get_eigenvalue(
-                config["fileset"]["eigfile"])
+            eigdata = from_eigenval.get_eigenvalue(config["fileset"]["eigfile"])
         ispin = eigdata.N_spin
+    if config["plotset"]["object"].lower() == "band":
+        fig, axs = plt.subplots(1, len(config["groupinfo"])*ispin,
+                                figsize=config["figset"]["figsize"], sharey=True)
+    elif config["plotset"]["object"].lower() == "dos":
+        fig, ax = plt.subplots(1, 1,
+                               figsize=config["figset"]["figsize"])
+    elif "band" in config["plotset"]["object"].lower() and \
+        "dos" in config["plotset"]["object"].lower():
         fig, axs = plt.subplots(1, len(config["groupinfo"])*ispin + 1,
                                 figsize=config["figset"]["figsize"], sharey=True)
-        dosdata = from_doscar.get_doscar(config["fileset"]["dosfile"])
-        plotting2.plot_band_dos(KPT, eigdata, dosdata, config, axs=axs)
+    cvasp(config, axs=axs)
     plt.show()
     fig.savefig('band_dos.png', dpi=300)

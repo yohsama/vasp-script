@@ -37,8 +37,10 @@ def plot_band(KPT, data, config, axs=None, *args, **kwargs):
         eigall = data.eig - fermi
     else:
         eigall = data.eig
-
-
+    used_points=[not "!" in i for i in KPT.k_sp_label]
+    kpath=KPT.kpath[used_points]
+    eigall=eigall[:,used_points]
+    k_sp_label=[i for i in KPT.k_sp_label if not "!" in i]
     if axs is None:
         _, axs = plt.subplots(1,
                               len(config["groupinfo"])*ispin,
@@ -48,42 +50,43 @@ def plot_band(KPT, data, config, axs=None, *args, **kwargs):
 
     for iaxs, group in zip(axs.reshape(-1, ispin), config["groupinfo"]):
         for i in range(ispin):
-            ax=iaxs[i]
-            e_range=np.where((eigall[i].max(axis=0)>config["plotset"]["Elim"][0])&(eigall[i].min(axis=0)<config["plotset"]["Elim"][1]))[0]
-            eig=eigall[:,:,e_range]
+            ax = iaxs[i]
+            e_range = np.where((eigall[i].max(axis=0) > config["plotset"]["Elim"][0]) & (
+                eigall[i].min(axis=0) < config["plotset"]["Elim"][1]))[0]
+            eig = eigall[:, :, e_range]
             if config["plotset"]["plot_type"] == 0:
                 sc = plot_band_type_0(
-                    KPT.kpath, eig[i], ax=ax, c='black', *args, **kwargs)
-            elif config["plotset"]["plot_type"]>=1:
+                    kpath, eig[i], ax=ax, c='black', *args, **kwargs)
+            elif config["plotset"]["plot_type"] >= 1:
                 pos = from_poscar.get_poscar(config["fileset"]["posfile"])
                 tag, group_info = ultils.group_info_from_input(group)
                 project_group = data.set_group(
                     grouptag=tag, symbollist=pos.get_symbollist())
-                project_group=project_group[:,:,:,e_range]
+                project_group = project_group[:, :, :, e_range]
                 print(config["plotset"])
                 if config["plotset"]["plot_type"] == 1:
-                    sc = plot_band_type_1(KPT.kpath, eig[i],
-                                        project_group=project_group[i],
-                                        group_info=group_info,
-                                        ax=ax,
-                                        int=config["plotset"]["int"],
-                                        scale=config["plotset"]["scale"],
-                                        *args,
-                                        **kwargs)
-                    if i==(len(range(ispin))-1):
+                    sc = plot_band_type_1(kpath, eig[i],
+                                          project_group=project_group[i],
+                                          group_info=group_info,
+                                          ax=ax,
+                                          int=config["plotset"]["int"],
+                                          scale=config["plotset"]["scale"],
+                                          *args,
+                                          **kwargs)
+                    if i == (len(range(ispin))-1):
                         legend_elements = [
                             Line2D([0], [0], color=j, marker='o', label=i) for i, j in group_info]
                         ax.legend(handles=legend_elements, loc="upper right")
                 elif config["plotset"]["plot_type"] == 2:
                     ax = iaxs[i]
-                    sc = plot_band_type_2(KPT.kpath,
-                                        eig[i],
-                                        project_group=project_group[i],
-                                        group_info=group_info,
-                                        ax=ax,
-                                        *args,
-                                        **kwargs)
-                    if i==range(ispin)[-1]:
+                    sc = plot_band_type_2(kpath,
+                                          eig[i],
+                                          project_group=project_group[i],
+                                          group_info=group_info,
+                                          ax=ax,
+                                          *args,
+                                          **kwargs)
+                    if i == range(ispin)[-1]:
                         cb = plt.colorbar(sc, ax=axs)
                         cb.set_ticks([0, 1])
                         if len(group_info) == 1:
@@ -95,9 +98,9 @@ def plot_band(KPT, data, config, axs=None, *args, **kwargs):
                 print("unkown type for plotting, available value is 0,1,2")
                 sys.exit()
     for ax in axs:
-        plot_sp_kline(KPT.kpath, KPT.k_sp_label, ax=ax, *args, **kwargs)
+        plot_sp_kline(kpath, k_sp_label, ax=ax, *args, **kwargs)
         ax.set_ylim(config["plotset"]["Elim"])
-        ax.set_xlim(KPT.kpath.min(), KPT.kpath.max())
+        ax.set_xlim(kpath.min(), kpath.max())
         if config["plotset"]["fermi"]:
             ax.set_ylabel(r'$E\ -\ E_f\ \mathrm{(eV)}$')
         else:
@@ -123,9 +126,10 @@ def plot_dos(data, config, swap=False, ax=None, *args, **kwargs):
     e_range = np.where((config["plotset"]["Elim"][0] < eig)
                        & (eig < config["plotset"]["Elim"][1]))[0]
     # print(0,e_range[0]-1)
-    e_range= [max(0,e_range[0]-1)] + e_range.tolist() + [min(e_range[-1]+1,eig.size -1)]
-    eig=eig[e_range]
-    dos=dos[:,e_range]
+    e_range = [max(0, e_range[0]-1)] + e_range.tolist() + \
+        [min(e_range[-1]+1, eig.size - 1)]
+    eig = eig[e_range]
+    dos = dos[:, e_range]
     if ax is None:
         _, ax = plt.subplots()
     tag = []
@@ -150,8 +154,8 @@ def plot_dos(data, config, swap=False, ax=None, *args, **kwargs):
             pos = from_poscar.get_poscar(config["fileset"]["posfile"])
             proj = data.set_group(
                 grouptag=tag, symbollist=pos.get_symbollist())
-            proj=proj[:,:,e_range]
-            plot_dos_type_1(eig,                            
+            proj = proj[:, :, e_range]
+            plot_dos_type_1(eig,
                             dos[i],
                             sign * proj[i],
                             info,
@@ -194,15 +198,11 @@ def plot_sp_kline(kpath, k_sp_label, ax=None, *args, **kwargs):
     if ax is None:
         ax = plt.subplot()
     # "!" is marked for the scf part in HSE/metaGGA calculate and will be exclude in the plot
-    kpath_sp = kpath[[i for i, j in enumerate(k_sp_label) if j]]
+    kpath_sp = kpath[[bool(i) for i in k_sp_label]]
     ax.set_xticklabels([])
     if (len(kpath_sp) > 0):
         if (len(kpath) > 1):
-            ax.vlines(kpath_sp,
-                    -1000, 1000,
-                    color='black',
-                    *args,
-                    **kwargs)
+            ax.vlines(kpath_sp, -1000, 1000, color='black', *args, **kwargs)
         ax.set_xticks(kpath_sp)
         ax.set_xticklabels([i for i in k_sp_label if i])
 
@@ -212,8 +212,8 @@ def plot_band_type_0(kpath, eig, ax=None, *args, **kwargs):
         ax = plt.subplot()
     if kpath.shape[0] == 1:
         if 'c' in kwargs.keys():
-            kwargs['color']=kwargs.pop('c')
-        ax.hlines(eig,-0.5,0.5, *args, **kwargs)
+            kwargs['color'] = kwargs.pop('c')
+        ax.hlines(eig, -0.5, 0.5, *args, **kwargs)
     else:
         ax.plot(kpath, eig, *args, **kwargs)
 
@@ -235,10 +235,10 @@ def plot_band_type_1(kpath,
         # for i, igroup in enumerate(project_group):
         #     label = r'' + group_info[i][0]
         #     ax.hlines(eig,-0.5,0.5,color=group_info[i][1],lw=project_group,label=label)
-        kpath=np.array([-0.5,0.5])
-        eig=eig.repeat(2,0)
-        project_group=project_group.repeat(2,1)
-        print(eig.shape,project_group.shape)
+        kpath = np.array([-0.5, 0.5])
+        eig = eig.repeat(2, 0)
+        project_group = project_group.repeat(2, 1)
+        print(eig.shape, project_group.shape)
     else:
         plot_band_type_0(kpath, eig, ax=ax, c='gray', *args, **kwargs)
     x = np.linspace(kpath.min(), kpath.max(), int)
@@ -250,11 +250,11 @@ def plot_band_type_1(kpath,
         X = x.repeat(Nband)
         s = griddata(kpath, igroup, x)
         ax.scatter(X,
-                Y,
-                c=group_info[i][1],
-                s=s * scale,
-                linewidths=None,
-                label=label, zorder=-10)
+                   Y,
+                   c=group_info[i][1],
+                   s=s * scale,
+                   linewidths=None,
+                   label=label, zorder=-10)
 
 
 def plot_band_type_2(kpath,
@@ -280,18 +280,6 @@ def plot_band_type_2(kpath,
         lc = LineCollection(segments, cmap="rainbow", norm=norm)
         lc.set_array(c)
         line = ax.add_collection(lc)
-        # plt.plot(kpath[i:i+2],eig[i:i+2,j],c=col[C[i,j]])
-    # sc = ax.scatter(X,
-    #                Y,
-    #                c=C,
-    #                vmin=0,
-    #                vmax=1,
-    #                s=size,
-    #                linewidths=None,
-    #                marker='o',
-    #                cmap="hsv",
-    #                *args,
-    #                **kwargs)
     return line
 
 
