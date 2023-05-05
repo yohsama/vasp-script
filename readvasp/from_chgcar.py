@@ -21,7 +21,7 @@ class get_chgcar(object):
         self.N_ions = np.array(self.__file__.readline().split(), dtype=np.int)
         self.type = self.__file__.readline()[:-2]
         self.positions = np.array([
-            np.array(self.__file__.readline().split(), dtype=np.float)
+            np.array(self.__file__.readline().split()[:3], dtype=np.float)
             for i in range(np.sum(self.N_ions))
         ])
 

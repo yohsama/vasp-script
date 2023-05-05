@@ -23,7 +23,7 @@ def get_cbm(EIG, OCC, OCC_E=0.001):
     """
     this method used to get the fermi level through the occupid number, the occupid threshold are defined by OCC_E, default is 0.001.
     """
-    return np.min(EIG[OCC < OCC_E])
+    return np.min(EIG[OCC <= OCC_E])
 
 
 def orbital_to_index(L_orbit, orbital):
@@ -60,13 +60,13 @@ def orbital_to_index(L_orbit, orbital):
 
 def set_group(L_orbit, project, grouptag, symbollist, norm=True):
     """
-    this method used to  group the project data by given element|symbol|atomic number and/or orbital.
+    this method used to group the project data by given element|symbol|atomic number and/or orbital.
     projectdata could be object:dos,pro from from_doscar.get_doscar() or from_procar.get_procar()
     grouptag should be writen as:
     symbollist shold be writen as string list.
     """
     symbollist = np.array(symbollist)
-    for i,igrouptag in enumerate(grouptag):
+    for i, igrouptag in enumerate(grouptag):
         tot = 0
         for igroup in igrouptag.split(','):
             whichorbit = ...
@@ -96,7 +96,7 @@ def set_group(L_orbit, project, grouptag, symbollist, norm=True):
             pro_group = tot[:, None]
         else:
             pro_group = np.append(pro_group, tot[:, None], axis=1)
-            
+
     return pro_group
 
 
@@ -120,10 +120,10 @@ def get_energy(eig=None, occ=None, info=None):
         elif "band" in info.lower():
             ispin = int(info.split("_")[1])
             N = int(info.split("_")[2])
-            fermi = np.max(eig[ispin,:, N-1])
-            print("band fermi",fermi)
+            fermi = np.max(eig[ispin, :, N-1])
+            print("band fermi", fermi)
     except Exception as e:
-        print("get_ferm failed",e)
+        print("get_ferm failed", e)
     if fermi is None:
         try:
             fermi = float(info)
@@ -131,10 +131,12 @@ def get_energy(eig=None, occ=None, info=None):
             print("unknown fermi input")
     return fermi
 
-def color_line(X,Y,C,ax=None,cmap="rainbow"):
+
+def color_line(X, Y, C, ax=None, cmap="rainbow"):
+    import matplotlib.pyplot as plt
     from matplotlib.collections import LineCollection
     if ax is None:
-        ax=plt.subplot()
+        ax = plt.subplot()
     norm = plt.Normalize(0, 1)
     x = X.repeat(2)[:-1]
     x[1::2] += (x[2::2] - x[1::2]) / 2
@@ -144,35 +146,35 @@ def color_line(X,Y,C,ax=None,cmap="rainbow"):
     #c[1::2] += (c[2::2] - c[1::2]) / 2
     points = np.array([x, y]).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
-    lc = LineCollection(segments, cmap=cmap,norm=norm)
+    lc = LineCollection(segments, cmap=cmap, norm=norm)
     lc.set_array(c)
     line = ax.add_collection(lc)
     return line
 
 
-def color_multiline(X,Y,C,ax=None,cmap="rainbow"):
-    from matplotlib.collections import LineCollection
+def color_multiline(X, Y, C, ax=None, cmap="rainbow"):
     import matplotlib.pyplot as plt
+    from matplotlib.collections import LineCollection
     if ax is None:
-        ax=plt.subplot()
+        ax = plt.subplot()
     norm = plt.Normalize(0, 1)
     x = X.repeat(2)[:-1]
     x[1::2] += (x[2::2] - x[1::2]) / 2
-    y = Y.repeat(2,axis=0)[:-1]    
+    y = Y.repeat(2, axis=0)[:-1]
     y[1::2] += (y[2::2] - y[1::2]) / 2
-    c = C.repeat(2,axis=0)[1:-1]
+    c = C.repeat(2, axis=0)[1:-1]
     #c[1::2] += (c[2::2] - c[1::2]) / 2
-    segments=np.empty((0,2,2))
+    segments = np.empty((0, 2, 2))
     for iy in y.T:
         points = np.array([x, iy]).T.reshape(-1, 1, 2)
-        st=np.concatenate([points[:-1], points[1:]], axis=1)
-        segments=np.concatenate((segments,st),axis=0)
-    lc = LineCollection(segments, cmap=cmap,norm=norm)
+        st = np.concatenate([points[:-1], points[1:]], axis=1)
+        segments = np.concatenate((segments, st), axis=0)
+    lc = LineCollection(segments, cmap=cmap, norm=norm)
     lc.set_array(c.T.flatten())
     line = ax.add_collection(lc)
+    lc.set_zorder(-10)
     return line
 
-def get_nearest_distence(dx):
-    return np.abs((dx+0.5)%1)-0.5
 
-kb=1.380649*10**-23
+def get_nearest_distence(dx):
+    return np.abs((dx+0.5) % 1)-0.5

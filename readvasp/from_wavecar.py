@@ -17,13 +17,14 @@ class get_wavecar(object):
         self._file_ = open(self.wavecar, 'rb')
         self._Recl_, self.I_spin, self._Rflag_ = np.array(np.fromfile(
             self._file_, dtype=np.double, count=3),
-                                                          dtype=int)
+            dtype=int)
+        # print("Recl",self._Recl_//8)
         self._Len_coeff_ = self._Recl_ // 8
         self._prec_coeff_ = self._get_coeff_prec()
         self._file_.seek((self._Recl_), 0)
         self.N_kpt, self.N_Band, self.Encut = np.array(np.fromfile(
             self._file_, dtype=np.double, count=3),
-                                                       dtype=int)
+            dtype=int)
         self.cell = self._get_cell()
         self.bcell = self.rcell_to_bcell(self.cell)
         self.kpoint = np.zeros((self.N_kpt, 3), dtype='double')
@@ -31,13 +32,17 @@ class get_wavecar(object):
         self.I_gvector, self.gvector = self.get_I_gvector(init=True)
         if self._len_gvector_[0] != self._N_planes_[0]:
             if self._len_gvector_[0] == self._N_planes_[0] * 2 - 1:
-                #print("Plane number not equal to the igtmp, now rerun this model as Gamma version calculaion.")
+                print(
+                    "# Plane number not equal to the igtmp, now rerun this model as Gamma version calculaion.")
                 self.L_gam = True
                 self.I_gvector, self.gvector = self.get_I_gvector()
-            if self._len_gvector_[0] == self._N_planes_[0] / 2:
-                #print("Plane number not equal to the igtmp, now rerun this model as SOC version calculaion.")
+            elif self._len_gvector_[0] == self._N_planes_[0] / 2:
+                print(
+                    "# Plane number not equal to the igtmp, now rerun this model as SOC version calculaion.")
                 self.L_soc = True
                 self.I_gvector, self.gvector = self.get_I_gvector()
+            else:
+                print("# igtmp != N_coeff")
         else:
             self.I_gvector, self.gvector = self.get_I_gvector()
         self._shapes_ = np.array(
@@ -91,7 +96,7 @@ class get_wavecar(object):
         return eig, occ
 
     def rcell_to_bcell(self, cell):
-        bcell = np.linalg.inv(cell) * 2 * np.pi
+        bcell = np.linalg.inv(cell).T * 2 * np.pi
         return bcell
 
     def get_fftgrid(self):
@@ -129,7 +134,7 @@ class get_wavecar(object):
         return nb1, nb2, nb3
 
     def get_I_gvector(self, init=False):
-        #t1=time.time()
+        # t1=time.time()
         nb1, nb2, nb3 = self.get_fftgrid()
         igtmp = np.array(np.meshgrid(nb2, nb3, nb1),
                          dtype='int').reshape(3, -1).T
@@ -140,27 +145,29 @@ class get_wavecar(object):
         self._len_gvector_ = np.zeros((self.N_kpt), dtype=int)
         if self.L_gam:
             if self._L_gamma_half_ == 'x':
-                #print('x')
+                # print('x')
                 igtmp = igtmp[(igtmp[:, 0] > 0) | ((igtmp[:, 0] == 0) &
                                                    (igtmp[:, 1] > 0)) |
                               ((igtmp[:, 0] == 0) & (igtmp[:, 1] == 0) &
                                (igtmp[:, 2] >= 0))]
             else:
-                #print('z')
+                # print('z')
                 igtmp = igtmp[(igtmp[:, 2] > 0) | ((igtmp[:, 2] == 0) &
                                                    (igtmp[:, 1] > 0)) |
                               ((igtmp[:, 2] == 0) & (igtmp[:, 1] == 0) &
                                (igtmp[:, 0] >= 0))]
         for ikpt in range(self.N_kpt):
-            sumkg = np.matrix(igtmp + self.kpoint[ikpt]) * np.matrix(
-                self.bcell)
+            sumkg = (igtmp + self.kpoint[ikpt]) @ self.bcell
             gtot = np.linalg.norm(sumkg, axis=1)
-            etot = (gtot**2) / c
-            igtmp = igtmp[etot <= self.Encut]
-            self._len_gvector_[ikpt] = igtmp.shape[0]
+            etot = (gtot**2) * hartree2eV * au2angstrom * au2angstrom
+            igtmp_r = igtmp[np.where(etot < self.Encut)[0]]
+            # print(etot[etot<self.Encut].max())
+            self._len_gvector_[ikpt] = igtmp_r.shape[0]
             if not init:
-                I_gvector[ikpt, :igtmp.shape[0]] = igtmp
-                gvector[ikpt, :igtmp.shape[0]] = igtmp.dot(self.bcell)
+                print(igtmp_r.shape)
+                I_gvector[ikpt, :igtmp_r.shape[0]] = igtmp_r
+                gvector[ikpt, :igtmp_r.shape[0]] = igtmp_r.dot(self.bcell)
+        # print(self._len_gvector_)
         return I_gvector, gvector
 
     def get_single_coeff(self, ispin=1, ikpt=1, iband=1, norm=False):
@@ -248,7 +255,7 @@ def calc_single_tdm(wfc, ikpt, ispin1, iband1, ispin2, iband2, norm=True):
     norm    = True      this option determines whether to normalize the coefficients 
     returns Transition dipole moment and overlap
     """
-    wfc = wfc.wfc
+
     dE = wfc.eig[ispin1 - 1, ikpt - 1,
                  iband1 - 1] - wfc.eig[ispin2 - 1, ikpt - 1, iband2 - 1]
     coeff1 = wfc.get_single_coeff(ispin1, ikpt, iband1, norm=norm)
@@ -262,7 +269,7 @@ def calc_single_tdm(wfc, ikpt, ispin1, iband1, ispin2, iband2, norm=True):
         tmp2 = coeff1 * coeff2.conj()
         tmp_project_g_r = np.sum(tmp2[:, np.newaxis] * igall, axis=0)
         tmp_project_g = (tmp_project_g - tmp_project_g_r) / 2
-    tdm_ = 1j / dE * (2 * hartree2eV) * tmp_project_g * au2debye * au2anstrom
+    tdm_ = 1j / dE * (2 * hartree2eV) * tmp_project_g * au2debye * au2angstrom
     tdm[:3] = tdm_
     tdm[-1] = np.sum(tdm_ * tdm_.conj(), axis=0)
     return tdm, overlap
@@ -321,10 +328,10 @@ def calc_tdm_in_kpoint(wfc, ikpt, ispin1, rband1, ispin2, rband2, norm=True):
                                  axis=2)
         tmp_project_g = (tmp_project_g - tmp_project_g_r) / 2
     tdm_ = 1j / dE[:, :, np.newaxis] * (
-        2 * hartree2eV) * tmp_project_g * au2debye * au2anstrom
+        2 * hartree2eV) * tmp_project_g * au2debye * au2angstrom
     tdm[:, :, :3] = tdm_
     tdm[:, :, -1] = np.sum(tdm_ * tdm_.conj(), axis=-1)
-    #tdm=np.abs(tdm)
+    # tdm=np.abs(tdm)
     return tdm, overlap
 
 
@@ -341,7 +348,7 @@ def calc_tdm_in_band(wfc, kpath, ispin1, iband1, ispin2, iband2, norm=True):
         a, b for the state of KS-band
         C for the coefficient of KS-band
         G for the gvector of specific kpoint
-    
+
     input as:
 
     kpath=np.array( [ kpt1, kpt2, kpt3, ...] ), 

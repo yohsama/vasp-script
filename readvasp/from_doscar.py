@@ -1,11 +1,8 @@
 #!/usr/bin/python3
 
-from glob import glob
-from itertools import islice
 
 import numpy as np
 import ultils
-from scipy.interpolate import griddata
 
 
 class get_doscar:

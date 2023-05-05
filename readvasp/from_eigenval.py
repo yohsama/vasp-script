@@ -41,6 +41,7 @@ def __get_eigenvalue__(file='EIGENVAL'):
         tmp = __file__.readline()
         N_Band = int(tmp.split()[2])
         N_kpt = int(tmp.split()[1])
+        N_ele = int(tmp.split()[0])
         kpoint = np.zeros((N_kpt, 3), dtype=float)
         Kwht = np.zeros((N_kpt), dtype=float)
         EIG = []
@@ -55,6 +56,11 @@ def __get_eigenvalue__(file='EIGENVAL'):
             occ = EIG[:, :, 2].reshape((1, N_kpt, -1))
             eig = EIG[:, :, 1].reshape((1, N_kpt, -1))
             print("find ispin = 1")
+        elif EIG.shape[2] == 2:
+            eig = EIG[:, :, 1].reshape((1, N_kpt, -1))
+            occ = np.zeros_like(eig)
+            occ[:,:,:N_ele//2]=1
+            print("find ispin = 1, but no have occupied information")
         else:
             occ = EIG[:, :, 3:].reshape((N_kpt, -1, 2)).transpose((2, 0, 1))
             eig = EIG[:, :, 1:3].reshape((N_kpt, -1, 2)).transpose((2, 0, 1))
