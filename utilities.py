@@ -38,8 +38,16 @@ def orbital_to_index(L_orbit, orbital):
             'dz2': [2],
             'dx2-y2': [2],
             'dxz': [2],
+            'fz3':[3],
+            'fxz2':[3],
+            'fyz2':[3],
+            'fxyz':[3],
+            'fz(x2-y2)':[3],
+            'fx(x2-3y2)':[3],
+            'fy(3x2-y2)':[3],
             'p': [1],
-            'd': [2]
+            'd': [2],
+            'f': [3]
         }
     elif L_orbit > 10:
         o2i = {
@@ -52,8 +60,16 @@ def orbital_to_index(L_orbit, orbital):
             'dz2': [6],
             'dx2-y2': [7],
             'dxz': [8],
+            'fz3':[9],
+            'fxz2':[10],
+            'fyz2':[11],
+            'fxyz':[12],
+            'fz(x2-y2)':[13],
+            'fx(x2-3y2)':[14],
+            'fy(3x2-y2)':[15],
             'p': [1, 2, 3],
-            'd': [4, 5, 6, 7, 8]
+            'd': [4, 5, 6, 7, 8],
+            'f': [9,10,11,12,13,14,15]
         }
     return np.array(o2i[orbital])
 
@@ -123,7 +139,7 @@ def get_energy(eig=None, occ=None, info=None):
             fermi = np.max(eig[ispin, :, N-1])
             print("band fermi", fermi)
     except Exception as e:
-        print("get_ferm failed", e)
+        print("get_fermi failed", e)
     if fermi is None:
         try:
             fermi = float(info)

@@ -16,14 +16,14 @@ class get_wavecar(object):
         self.wavecar = WAVECAR
         self._file_ = open(self.wavecar, 'rb')
         self._Recl_, self.I_spin, self._Rflag_ = np.array(np.fromfile(
-            self._file_, dtype=np.double, count=3),
+            self._file_, dtype=np.float64, count=3),
             dtype=int)
         # print("Recl",self._Recl_//8)
         self._Len_coeff_ = self._Recl_ // 8
         self._prec_coeff_ = self._get_coeff_prec()
         self._file_.seek((self._Recl_), 0)
         self.N_kpt, self.N_Band, self.Encut = np.array(np.fromfile(
-            self._file_, dtype=np.double, count=3),
+            self._file_, dtype=np.float64, count=3),
             dtype=int)
         self.cell = self._get_cell()
         self.bcell = self.rcell_to_bcell(self.cell)
@@ -63,7 +63,7 @@ class get_wavecar(object):
             raise ValueError("Invalid TAG values: {}".format(self._Rflag_))
 
     def _get_cell(self):
-        cell = np.fromfile(self._file_, np.double, count=9).reshape((3, 3))
+        cell = np.fromfile(self._file_, np.float64, count=9).reshape((3, 3))
         return cell
 
     def _get_eig_and_occ(self):
@@ -76,13 +76,13 @@ class get_wavecar(object):
                     self._Recl_ * (2 + ((self.N_kpt * ispin + ikpt) *
                                         (1 + self.N_Band))), 0)
                 self._N_planes_[ikpt] = np.fromfile(self._file_,
-                                                    np.double,
+                                                    np.float64,
                                                     count=1)
                 self.kpoint[ikpt] = np.fromfile(self._file_,
-                                                np.double,
+                                                np.float64,
                                                 count=3)
                 eig_tmp = np.fromfile(self._file_,
-                                      np.double,
+                                      np.float64,
                                       count=(self.N_Band * 3)).reshape(-1, 3)
                 """
                 eig_tmp

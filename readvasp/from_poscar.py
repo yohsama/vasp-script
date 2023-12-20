@@ -15,5 +15,5 @@ class get_poscar(object):
         
     def get_by_ase(self):
         self.atoms=ase.io.read(self.__file_name__)
-        self.bcell=self.atoms.get_reciprocal_cell()
+        self.bcell=self.atoms.cell.reciprocal()
 

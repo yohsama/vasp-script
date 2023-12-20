@@ -3,7 +3,7 @@ import numpy as np
 from itertools import islice
 
 
-class get_eigenvalue:
+class get_eigenvalue(object):
     def __init__(self, EIG_FILES=["EIGENVAL"]):
         self.__file__ = EIG_FILES
         for i, efile in enumerate(EIG_FILES):

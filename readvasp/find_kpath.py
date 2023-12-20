@@ -13,7 +13,7 @@ else:
     prec=np.array(0.01)
 
 
-rep=pos.get_reciprocal_cell() # get reciprocal vectors.
+rep=pos.cell.reciprocal() # get reciprocal vectors.
 b1=np.array(rep[0])
 b2=np.array(rep[1])
 b3=np.array(rep[2])

@@ -1,6 +1,6 @@
 import numpy as np
 import statsmodels.tsa.api as smt
-import ultils
+import utilities
 import ase.io
 from numba import jit
 def velocity_from_newton(dx, a, dt):
@@ -13,7 +13,7 @@ def velocity_from_infinite(dx, dt):
 
 def get_velocitys(strcs, dt=1,method='newton'):
     x = np.array([i.get_scaled_positions() for i in strcs])  # frac
-    dx = (ultils.get_nearest_distence(x[1:] - x[:-1]) @ strcs[0].cell) * (
+    dx = (utilities.get_nearest_distence(x[1:] - x[:-1]) @ strcs[0].cell) * (
         10**-10)  # \AA   -> m
     dt = 10**-15*dt  # fs    -> s
     T = len(strcs)

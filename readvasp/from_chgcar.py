@@ -21,7 +21,7 @@ class get_chgcar(object):
         self.N_ions = np.array(self.__file__.readline().split(), dtype=np.int)
         self.type = self.__file__.readline()[:-2]
         self.positions = np.array([
-            np.array(self.__file__.readline().split()[:3], dtype=np.float)
+            np.array(self.__file__.readline().split()[:3], dtype=np.float64)
             for i in range(np.sum(self.N_ions))
         ])
 
@@ -32,15 +32,15 @@ class get_chgcar(object):
             LOC_DAT.extend(itmp.split())
         try:
             self.chg = np.array(LOC_DAT[:np.prod(self.NG)],
-                                dtype=np.double).reshape((1, *self.NG),
+                                dtype=np.float64).reshape((1, *self.NG),
                                                          order='F')
         except:
             LOC_DATA = np.array(LOC_DAT[:np.prod(self.NG)],
-                                dtype=np.double).reshape(self.NG, order='F')
+                                dtype=np.float64).reshape(self.NG, order='F')
             LOC_DATB = np.array(
                 LOC_DAT[len(LOC_DAT) // 2 + 3:len(LOC_DAT) // 2 +
                         np.prod(self.NG) + 3],
-                dtype=np.double).reshape(self.NG, order='F')
+                dtype=np.float64).reshape(self.NG, order='F')
             self.chg = np.stack(
                 ((LOC_DATA + LOC_DATB) / 2, (LOC_DATA - LOC_DATB) / 2))
 

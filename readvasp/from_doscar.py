@@ -2,10 +2,10 @@
 
 
 import numpy as np
-import ultils
+import utilities
 
 
-class get_doscar:
+class get_doscar(object):
     def __init__(self, DOSCAR='./DOSCAR'):
         self.__file__ = open(DOSCAR)
         self.get_dos()
@@ -23,8 +23,8 @@ class get_doscar:
         tmp_total = []
         for _ in range(self.N_edos):
             tmp = self.__file__.readline()
-            tmp_total.append(np.array(tmp.split(), dtype=np.float))
-        total = np.array(tmp_total, dtype=np.float).reshape(self.N_edos, -1)
+            tmp_total.append(np.array(tmp.split(), dtype=np.float64))
+        total = np.array(tmp_total, dtype=np.float64).reshape(self.N_edos, -1)
         self.Energy = total[:, 0]
         self.eig = total[:, 0]
         if total.shape[1] == 3:
@@ -58,11 +58,12 @@ class get_doscar:
                                      where=self.project.sum((-1, -2))[:, :, None, None] != 0) * self.total[:, :, None, None]
         if self.project.shape[3] == 3:
             self.L_orbit = 10
-        elif self.project.shape[3] == 9:
+        elif self.project.shape[3] >= 9:
             self.L_orbit = 11
         else:
+            self.L_orbit = 0
             print("Unrecognize Version in LORBIT; code [%d]" %
                   self.project.shape[3])
 
     def set_group(self, grouptag, symbollist):
-        return ultils.set_group(self.L_orbit, self.project, grouptag, symbollist)
+        return utilities.set_group(self.L_orbit, self.project, grouptag, symbollist)

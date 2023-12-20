@@ -5,7 +5,7 @@ import ase.io
 import numpy as np
 
 
-class get_kpoints:
+class get_kpoints(object):
     def __init__(self, KPOINTS_FILE=['KPOINTS']):
         self.ini_kpt()
         self.kfiles = KPOINTS_FILE
@@ -17,7 +17,7 @@ class get_kpoints:
 
     def ini_kpt(self):
         self.k_sp_label = []
-        self.kpoint = np.zeros((0, 3), dtype=float)
+        #self.kpoint = np.zeros((0, 3), dtype=float)
         self.N_kpt = 0
         self.kpoint=np.empty((0,3))
         self.kwht=np.empty(0)
@@ -58,8 +58,8 @@ class get_kpoints:
         inum = 0
         for itmp in tmp:
             if ((inum < N_kpt) & bool(re.match(' *-?[.0-9]{1,} *-?[.0-9]{1,} *-?[.0-9]{1,}', itmp))):
-                kpoint[inum] = np.array(itmp.split()[:3], dtype=np.double)
-                kwht[inum] = (np.array(itmp.split()[3], dtype=np.double))
+                kpoint[inum] = np.array(itmp.split()[:3], dtype=np.float64)
+                kwht[inum] = (np.array(itmp.split()[3], dtype=np.float64))
                 if "#" in itmp:
                     self.k_sp_label.append(
                         r"" + re.split(r"[# \n]+", itmp)[-2] + "")
@@ -85,8 +85,8 @@ class get_kpoints:
         for itmp in tmp:
             itmp1 = itmp[0]
             itmp2 = itmp[1]
-            tmp1 = np.array(itmp1.split()[0:3], dtype=np.double)
-            tmp2 = np.array(itmp2.split()[0:3], dtype=np.double)
+            tmp1 = np.array(itmp1.split()[0:3], dtype=np.float64)
+            tmp2 = np.array(itmp2.split()[0:3], dtype=np.float64)
             #print(tmp1, tmp2)
             kx = np.interp(np.arange(0, self.N_kpt), [0, self.N_kpt],
                            [tmp1[0], tmp2[0]])
@@ -107,8 +107,8 @@ class get_kpoints:
                                        re.split(r"[# \n]+", itmp2)[-2] + "")
             else:
                 self.k_sp_label.append(r"")
-
-        self.kpoint=np.concatenate((self.kpoint,kpoint))
+        print(self.kpoint.shape,np.array(kpoint).shape)
+        self.kpoint=np.concatenate((self.kpoint,np.array(kpoint).reshape(-1,3)))
         self.kwht=np.concatenate((self.kwht,kwht))
         
     def make_k_path(self):
@@ -116,7 +116,7 @@ class get_kpoints:
         for str_file in ['CONTCAR', 'POSCAR', 'vasprun.xml', 'OUTCAR']:
             try:
                 pos = ase.io.read(root+"/"+str_file, "-1")
-                bcell = pos.get_reciprocal_cell()
+                bcell = pos.cell.reciprocal()
             except:
                 pass
             else:

@@ -3,7 +3,7 @@ import re
 from itertools import islice
 
 import numpy as np
-import ultils
+import utilities
 
 
 class get_procar:
@@ -32,7 +32,7 @@ class get_procar:
                     self.Kwht = np.append(self.Kwht, Kwht, axis=0)
                     self.N_kpt += eig.shape[1]
 
-        self.fermi = ultils.get_fermi(self.eig, self.occ)
+        self.fermi = utilities.get_fermi(self.eig, self.occ)
 
         return
 
@@ -81,8 +81,8 @@ def get_all_project_band(PROCAR='PROCAR'):
             for ikpt in range(N_kpt):
                 tmp = __file__.readline()
                 kpoint[ikpt] = np.array([tmp[19:29], tmp[30:40], tmp[41:51]],
-                                        dtype=np.double)
-                wht[ikpt] = np.double(tmp[41:51])
+                                        dtype=np.float64)
+                wht[ikpt] = np.float64(tmp[41:51])
                 tmp = __file__.readline()  # 2
                 for iband in range(N_band):
                     #print("ispin:%d,ikpt:%d,iband:%d" % (ispin,ikpt,iband))
@@ -134,8 +134,8 @@ def get_sp_project_band(PROCAR='PROCAR'):
             for ikpt in range(N_kpt):
                 tmp = __file__.readline()
                 kpoint[ikpt] = np.array([tmp[19:29], tmp[30:40], tmp[41:51]],
-                                        dtype=np.double)
-                wht[ikpt] = np.double(tmp[41:51])
+                                        dtype=np.float64)
+                wht[ikpt] = np.float64(tmp[41:51])
                 tmp = __file__.readline()
                 for iband in range(N_band):
                     tmp = __file__.readline()
@@ -164,4 +164,4 @@ def get_sp_project_band(PROCAR='PROCAR'):
 
 
 def set_group(self, grouptag, symbollist, norm=True):
-    return ultils.set_group(self, grouptag, symbollist, norm=True)
+    return utilities.set_group(self, grouptag, symbollist, norm=True)

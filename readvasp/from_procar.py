@@ -3,10 +3,10 @@ import re
 from itertools import islice
 
 import numpy as np
-import ultils
+import utilities
 import gzip
 
-class get_procar:
+class get_procar(object):
     def __init__(self, PRO_FILES=['PROCAR']):
         self.__file__ = PRO_FILES
         for i, pfile in enumerate(PRO_FILES):
@@ -32,34 +32,37 @@ class get_procar:
                     self.Kwht = np.append(self.Kwht, Kwht, axis=0)
                     self.N_kpt += eig.shape[1]
 
-        self.fermi = ultils.get_fermi(self.eig, self.occ)
+        self.fermi = utilities.get_fermi(self.eig, self.occ)
 
     def set_group(self, grouptag, symbollist):
-        return ultils.set_group(self.L_orbit, self.project, grouptag, symbollist)
+        return utilities.set_group(self.L_orbit, self.project, grouptag, symbollist)
 
     def __get_L_orbit__(self,PROCAR='PROCAR'):
         with gzip.open(PROCAR,mode='rt') if PROCAR.endswith('.gz') else open(PROCAR) as __file__:
-                tmp = __file__.readline()
-                print(tmp)
-                if "phase" in tmp:
-                    self.L_orbit = 12
-                    print("read as LORBIT == 12")
-                elif "decomposed" in tmp:
-                    self.L_orbit = 11
-                    print("read as LORBIT == 11")
-                elif "new" in tmp:
-                    self.L_orbit = 10
-                    print("read as LORBIT == 10")
-                tmp = islice(__file__, 4, 5).__next__()
-                if np.array(re.split(r'occ\.', tmp)[-1], dtype=np.float) > 1:
-                    self.I_spin = 1
-                else:
-                    self.I_spin = 2
-                if self.L_orbit > 10:
-                    self.__N_orbit__=9
-                elif self.L_orbit == 10:
-                    self.__N_orbit__=3
-
+            tmp = __file__.readline()
+            print(tmp)
+            if "phase" in tmp:
+                self.L_orbit = 12
+                print("read as LORBIT == 12")
+            elif "decomposed" in tmp:
+                self.L_orbit = 11
+                print("read as LORBIT == 11")
+            elif "new" in tmp:
+                self.L_orbit = 10
+                print("read as LORBIT == 10")
+            tmp = islice(__file__, 4, 5).__next__()
+            if np.array(re.split(r'occ\.', tmp)[-1], dtype=np.float) > 1:
+                self.I_spin = 1
+            else:
+                self.I_spin = 2
+            tmp = islice(__file__,1,2).__next__()
+            
+            self.__N_orbit__ = len(tmp.split())-2
+            # if self.L_orbit > 10:
+            #     self.__N_orbit__=9
+            # elif self.L_orbit == 10:
+            #     self.__N_orbit__=3
+            # print(self.__N_orbit__)
 
     def get_all_project_band(self,PROCAR='PROCAR'):
         self.__get_L_orbit__(PROCAR)
@@ -82,14 +85,16 @@ class get_procar:
                 tmp = __file__.readline()
                 for ispin in range(I_spin):
                     for ikpt in range(N_kpt):
-                        tmp = __file__.readline()
+                        while not "k-point " in tmp:
+                            tmp = __file__.readline() 
                         kpoint[ikpt] = np.array([tmp[19:29], tmp[30:40], tmp[41:51]],
-                                                dtype=np.double)
-                        wht[ikpt] = np.double(tmp[41:51])
-                        tmp = __file__.readline()  # 2
+                                                dtype=np.float64)
+                        wht[ikpt] = np.float64(tmp[41:51])
+                        # tmp = __file__.readline()  # 2
                         for iband in range(N_band):
                             #print("ispin:%d,ikpt:%d,iband:%d" % (ispin,ikpt,iband))
-                            tmp = __file__.readline()  #1*band
+                            while not "band" in tmp:
+                                tmp = __file__.readline() 
                             eig[ispin, ikpt, iband] = re.split(r'[ \n]+', tmp)[4]
                             occ[ispin, ikpt, iband] = re.split(r'occ\.', tmp)[-1]
                             tmp = __file__.readline()  #2*band
@@ -139,8 +144,8 @@ class get_procar:
                     for ikpt in range(N_kpt):
                         tmp = __file__.readline()
                         kpoint[ikpt] = np.array([tmp[19:29], tmp[30:40], tmp[41:51]],
-                                                dtype=np.double)
-                        wht[ikpt] = np.double(tmp[41:51])
+                                                dtype=np.float64)
+                        wht[ikpt] = np.float64(tmp[41:51])
                         tmp = __file__.readline()
                         for iband in range(N_band):
                             tmp = __file__.readline()
